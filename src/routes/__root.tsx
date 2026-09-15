@@ -124,7 +124,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <IntonixProvider>
-        <div className="relative flex min-h-screen flex-col bg-mesh">
+        <div className="relative flex min-h-screen flex-col app-shell">
           <SiteHeader />
           <main className="flex-1">
             {/* Required: nested routes render here. */}

@@ -187,7 +187,11 @@
 }
 
 /* ---------- Backdrops ---------- */
-@utility bg-mesh {
+.app-shell {
+  background-attachment: fixed;
+}
+
+[data-bg="mesh"] .app-shell {
   background-image:
     radial-gradient(
       50rem 30rem at 12% -10%,
@@ -196,6 +200,22 @@
     ),
     radial-gradient(40rem 26rem at 92% 6%, color-mix(in oklab, var(--primary) 14%, transparent), transparent),
     radial-gradient(36rem 24rem at 60% 100%, color-mix(in oklab, var(--primary) 10%, transparent), transparent);
+}
+
+@utility input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--input);
+  background-color: color-mix(in oklab, var(--secondary) 60%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  outline: none;
+  &:focus {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--primary) 45%, transparent),
+      0 0 22px -8px color-mix(in oklab, var(--primary) 60%, transparent);
+  }
 }
 
 @utility glass {

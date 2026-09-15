@@ -14,6 +14,7 @@ import { Route as DmcaRouteImport } from './routes/dmca'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProxyRouteImport } from './routes/proxy'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PlayIdRouteImport } from './routes/play.$id'
 
@@ -42,6 +43,11 @@ const ProxyRoute = ProxyRouteImport.update({
   path: '/proxy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
   '/proxy': typeof ProxyRoute
+  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/play/$id': typeof PlayIdRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
   '/proxy': typeof ProxyRoute
+  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/play/$id': typeof PlayIdRoute
 }
@@ -78,15 +86,31 @@ export interface FileRoutesById {
   '/games': typeof GamesRoute
   '/privacy': typeof PrivacyRoute
   '/proxy': typeof ProxyRoute
+  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/play/$id': typeof PlayIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/dmca' | '/games' | '/privacy' | '/proxy' | '/terms' | '/play/$id'
+    | '/'
+    | '/dmca'
+    | '/games'
+    | '/privacy'
+    | '/proxy'
+    | '/settings'
+    | '/terms'
+    | '/play/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dmca' | '/games' | '/privacy' | '/proxy' | '/terms' | '/play/$id'
+  to:
+    | '/'
+    | '/dmca'
+    | '/games'
+    | '/privacy'
+    | '/proxy'
+    | '/settings'
+    | '/terms'
+    | '/play/$id'
   id:
     | '__root__'
     | '/'
@@ -94,6 +118,7 @@ export interface FileRouteTypes {
     | '/games'
     | '/privacy'
     | '/proxy'
+    | '/settings'
     | '/terms'
     | '/play/$id'
   fileRoutesById: FileRoutesById
@@ -104,6 +129,7 @@ export interface RootRouteChildren {
   GamesRoute: typeof GamesRoute
   PrivacyRoute: typeof PrivacyRoute
   ProxyRoute: typeof ProxyRoute
+  SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
   PlayIdRoute: typeof PlayIdRoute
 }
@@ -145,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProxyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -168,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   GamesRoute: GamesRoute,
   PrivacyRoute: PrivacyRoute,
   ProxyRoute: ProxyRoute,
+  SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
   PlayIdRoute: PlayIdRoute,
 }
