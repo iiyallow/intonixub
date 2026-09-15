@@ -53,7 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   cloakTitle: "",
   cloakFavicon: "",
   panicKey: "Escape",
-  panicUrl: PANIC_TARGETS[0].url,
+  panicUrl: "https://classroom.google.com/",
 };
 
 const KEYS = {
@@ -95,7 +95,7 @@ function write(key: string, value: unknown) {
 export function hexToOklch(hex: string): string {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
   if (!m) return hex;
-  const int = parseInt(m[1], 16);
+  const int = parseInt(m[1]!, 16);
   const srgb = [(int >> 16) & 255, (int >> 8) & 255, int & 255].map((v) => {
     const c = v / 255;
     return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -222,8 +222,8 @@ export function IntonixProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     const root = document.documentElement;
-    root.dataset.theme = settings.theme;
-    root.dataset.bg = settings.background;
+    root.dataset["theme"] = settings.theme;
+    root.dataset["bg"] = settings.background;
     if (settings.accent) root.style.setProperty("--accent-user", hexToOklch(settings.accent));
     else root.style.removeProperty("--accent-user");
     if (settings.background === "image" && settings.backgroundImage) {
