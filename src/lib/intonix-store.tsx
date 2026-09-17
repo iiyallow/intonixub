@@ -8,7 +8,23 @@ import {
   type ReactNode,
 } from "react";
 
-export type ThemeId = "intonix" | "oled" | "cyberpunk" | "nord" | "catppuccin" | "light";
+export type ThemeId =
+  | "intonix"
+  | "oled"
+  | "cyberpunk"
+  | "nord"
+  | "catppuccin"
+  | "light"
+  | "dracula"
+  | "gruvbox"
+  | "solarized"
+  | "synthwave"
+  | "forest"
+  | "rosewater"
+  | "mono"
+  | "abyss"
+  | "ember"
+  | "paper";
 export type BackgroundMode = "solid" | "mesh" | "particles" | "image";
 
 export type CloakPreset = {
@@ -18,7 +34,7 @@ export type CloakPreset = {
 };
 
 export const CLOAK_PRESETS: CloakPreset[] = [
-  { id: "none", title: "Intonix Games", favicon: "/favicon.ico" },
+  { id: "none", title: "IntonixUB", favicon: "/favicon.ico" },
   { id: "drive", title: "My Drive - Google Drive", favicon: "https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png" },
   { id: "classroom", title: "Classes", favicon: "https://ssl.gstatic.com/classroom/favicon.png" },
   { id: "canvas", title: "Dashboard", favicon: "https://canvas.instructure.com/favicon.ico" },
