@@ -28,14 +28,15 @@ export const Route = createFileRoute("/terms")({
       </ul>
       <h2>Content</h2>
       <p>
-        Games are created and hosted by third parties and remain the property of their creators.
-        Intonix Games links to and frames that content; we make no claim of ownership.
+        Content reached through the proxy belongs to its original owners. IntonixUB only relays
+        requests; we make no claim of ownership.
       </p>
       <h2>No warranty</h2>
       <p>
-        The service is provided "as is" without warranties of any kind. Availability of individual
-        games can change without notice.
+        The service is provided "as is" without warranties of any kind. Availability can change
+        without notice, and we may terminate a subscription at any time without refund.
       </p>
+
       <h2>Changes</h2>
       <p>We may update these terms; continued use means you accept the current version.</p>
     </LegalPage>
