@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { IntonixProvider } from "@/lib/intonix-store";
+import { AuthProvider } from "@/lib/auth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 
@@ -80,10 +81,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Intonix Games" },
-      { name: "description", content: "A sleek, distraction-free browser arcade." },
-      { property: "og:title", content: "Intonix Games" },
-      { property: "og:description", content: "A sleek, distraction-free browser arcade." },
+      { title: "IntonixUB" },
+      { name: "description", content: "Fast, private web access with a clean console." },
+      { property: "og:title", content: "IntonixUB" },
+      { property: "og:description", content: "Fast, private web access with a clean console." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -123,7 +124,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <IntonixProvider>
+      <AuthProvider>
+        <IntonixProvider>
         <div className="relative flex min-h-screen flex-col app-shell">
           <SiteHeader />
           <main className="flex-1">
@@ -132,7 +134,8 @@ function RootComponent() {
           </main>
           <SiteFooter />
         </div>
-      </IntonixProvider>
+        </IntonixProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
