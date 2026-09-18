@@ -1,15 +1,19 @@
 import { Link } from "@tanstack/react-router";
-import { FileText, Home, Settings, ShieldAlert } from "lucide-react";
+import { FileText, Globe, Home, Settings, ShieldAlert, User } from "lucide-react";
 import { useIntonix } from "@/lib/intonix-store";
+import { useAuth } from "@/lib/auth";
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
+  { to: "/proxy", label: "Console", icon: Globe },
   { to: "/settings", label: "Settings", icon: Settings },
   { to: "/terms", label: "Terms", icon: FileText },
 ] as const;
 
 export function SiteHeader() {
   const { panic, settings } = useIntonix();
+  const { session, isAdmin } = useAuth();
+
 
   return (
     <header className="sticky top-0 z-50 border-b border-border glass">
