@@ -7,10 +7,10 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.2fr_1fr_1fr]">
         <div>
           <p className="font-display text-lg font-extrabold">
-            Intonix<span className="text-primary text-glow"> Games</span>
+            Intonix<span className="text-primary text-glow">UB</span>
           </p>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            A clean, fast, distraction-free arcade. No installs, no clutter — just play.
+            A clean, fast, distraction-free web console. No installs, no clutter.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export function SiteFooter() {
             <MessageCircle className="size-4 text-primary" /> Community
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Game requests, updates and mirrors — all in the Discord.
+            Status updates, mirrors and support — all in the Discord.
           </p>
           <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
             <Users className="size-4 text-primary" /> 12,480 members · 843 online
@@ -56,7 +56,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Intonix Games. All games belong to their respective creators.
+        © {new Date().getFullYear()} IntonixUB. Use responsibly — see our Terms of Service.
       </div>
     </footer>
   );
