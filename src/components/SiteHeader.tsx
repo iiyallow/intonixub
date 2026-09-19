@@ -23,7 +23,11 @@ export function SiteHeader() {
         </Link>
 
         <nav className="ml-auto hidden items-center gap-1 md:flex">
-          {NAV.map(({ to, label }) => (
+          {[
+            ...NAV,
+            ...(session ? [{ to: "/account", label: "Account" } as const] : [{ to: "/auth", label: "Sign in" } as const]),
+            ...(isAdmin ? [{ to: "/admin", label: "Admin" } as const] : []),
+          ].map(({ to, label }) => (
             <Link
               key={to}
               to={to}
@@ -48,7 +52,12 @@ export function SiteHeader() {
       </div>
 
       <nav className="flex items-center justify-around border-t border-border px-2 pb-2 md:hidden">
-        {NAV.map(({ to, label, icon: Icon }) => (
+        {[
+          ...NAV,
+          session
+            ? ({ to: "/account", label: "Account", icon: User } as const)
+            : ({ to: "/auth", label: "Sign in", icon: User } as const),
+        ].map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}

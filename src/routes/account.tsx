@@ -60,7 +60,7 @@ function AccountPage() {
         <Field
           label="Status"
           value={profile?.status ?? "active"}
-          className={STATUS_TONE[profile?.status ?? "active"]}
+          className={STATUS_TONE[profile?.status ?? "active"] ?? ""}
         />
         <Field
           label="Renews / expires"
