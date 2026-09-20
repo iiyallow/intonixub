@@ -13,13 +13,13 @@ import {
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — Intonix Games" },
+      { title: "Settings — IntonixUB" },
       {
         name: "description",
         content:
-          "Customize Intonix Games: tab cloaking, six themes, custom accent colors, animated backgrounds, panic keybinds and save-data tools.",
+          "Customize IntonixUB with themes, interactive backgrounds, tab cloaking, panic keybinds and local data tools.",
       },
-      { property: "og:title", content: "Settings — Intonix Games" },
+      { property: "og:title", content: "Settings — IntonixUB" },
       {
         property: "og:description",
         content: "Themes, tab cloaking, panic keybinds and save data — all in one place.",
@@ -30,18 +30,30 @@ export const Route = createFileRoute("/settings")({
 });
 
 const THEMES: { id: ThemeId; label: string; swatch: string }[] = [
-  { id: "intonix", label: "Intonix Dark", swatch: "linear-gradient(135deg,#1b2233,#4c7dfd)" },
+  { id: "intonix", label: "Electric Night", swatch: "linear-gradient(135deg,#090712,#7c3aed 45%,#ec4899 72%,#22d3ee)" },
   { id: "oled", label: "Midnight OLED", swatch: "linear-gradient(135deg,#000,#3d3d3d)" },
   { id: "cyberpunk", label: "Cyberpunk", swatch: "linear-gradient(135deg,#2b0f3a,#ff2e88)" },
   { id: "nord", label: "Nord", swatch: "linear-gradient(135deg,#3b4252,#88c0d0)" },
   { id: "catppuccin", label: "Catppuccin", swatch: "linear-gradient(135deg,#302d41,#f5c2e7)" },
   { id: "light", label: "Light Mode", swatch: "linear-gradient(135deg,#f4f6fb,#3a6df0)" },
+  { id: "dracula", label: "Dracula", swatch: "linear-gradient(135deg,#282a36,#bd93f9)" },
+  { id: "gruvbox", label: "Gruvbox", swatch: "linear-gradient(135deg,#282828,#d79921)" },
+  { id: "solarized", label: "Solarized", swatch: "linear-gradient(135deg,#073642,#2aa198)" },
+  { id: "synthwave", label: "Synthwave", swatch: "linear-gradient(135deg,#24113c,#ff4fa3)" },
+  { id: "forest", label: "Forest", swatch: "linear-gradient(135deg,#102a24,#34d399)" },
+  { id: "rosewater", label: "Rosewater", swatch: "linear-gradient(135deg,#351a2a,#fb7185)" },
+  { id: "mono", label: "Monochrome", swatch: "linear-gradient(135deg,#101010,#e5e5e5)" },
+  { id: "abyss", label: "Abyss", swatch: "linear-gradient(135deg,#031525,#22d3ee)" },
+  { id: "ember", label: "Ember", swatch: "linear-gradient(135deg,#291410,#f97316)" },
+  { id: "paper", label: "Paper", swatch: "linear-gradient(135deg,#faf7ed,#a16207)" },
 ];
 
 const BACKGROUNDS: { id: BackgroundMode; label: string }[] = [
   { id: "solid", label: "Solid color" },
   { id: "mesh", label: "Gradient mesh" },
   { id: "particles", label: "Animated particles" },
+  { id: "aurora", label: "Aurora ribbons" },
+  { id: "grid", label: "Neon grid" },
   { id: "image", label: "Custom image" },
 ];
 
@@ -105,7 +117,7 @@ function SettingsPage() {
             <input
               value={settings.cloakTitle}
               onChange={(e) => setSettings({ cloakTitle: e.target.value })}
-              placeholder="Intonix Games"
+              placeholder="IntonixUB"
               className="input"
             />
           </Field>
@@ -145,7 +157,7 @@ function SettingsPage() {
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={settings.accent ?? "#4c7dfd"}
+                value={settings.accent ?? "#7c3aed"}
                 onChange={(e) => setSettings({ accent: e.target.value })}
                 aria-label="Accent color"
                 className="size-10 cursor-pointer rounded-lg border border-input bg-transparent"
