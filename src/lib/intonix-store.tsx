@@ -25,7 +25,7 @@ export type ThemeId =
   | "abyss"
   | "ember"
   | "paper";
-export type BackgroundMode = "solid" | "mesh" | "particles" | "image";
+export type BackgroundMode = "solid" | "mesh" | "particles" | "aurora" | "grid" | "image";
 
 export type CloakPreset = {
   id: string;
@@ -64,7 +64,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   theme: "intonix",
   accent: null,
-  background: "mesh",
+  background: "particles",
   backgroundImage: "",
   cloakTitle: "",
   cloakFavicon: "",
