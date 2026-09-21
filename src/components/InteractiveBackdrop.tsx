@@ -37,7 +37,7 @@ export function InteractiveBackdrop() {
         vx: (Math.random() - 0.5) * 0.22,
         vy: (Math.random() - 0.5) * 0.22,
         size: 0.8 + Math.random() * 1.5,
-        color: palette[index % palette.length] ?? palette[0],
+        color: palette[index % palette.length] ?? "#7c3aed",
       }));
     };
 

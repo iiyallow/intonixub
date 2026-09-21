@@ -9,6 +9,6 @@
 - [x] Rename site to IntonixUB everywhere
 - [x] Add more themes
 - [x] Auth page, account page, admin dashboard (edit tier/status)
-- [ ] Expanded legal: prohibited uses, no refunds, termination at any time
+- [x] Expanded legal: prohibited uses, no refunds, termination at any time
 - [ ] Proxy engine limitation: your worker returns pages without rewriting styles/scripts, so sites load unstyled
-- [ ] Electric Night redesign, interactive backgrounds, compact bookmark rail, and console quality-of-life upgrades
+- [x] Electric Night redesign, interactive backgrounds, compact bookmark rail, and console quality-of-life upgrades
