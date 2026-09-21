@@ -12,6 +12,8 @@ export const Route = createFileRoute("/privacy")({
       },
       { property: "og:title", content: "Privacy Policy — IntonixUB" },
       { property: "og:description", content: "Local-first data handling at IntonixUB." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (
@@ -23,7 +25,8 @@ export const Route = createFileRoute("/privacy")({
       <h2>What we store</h2>
       <ul>
         <li>Appearance and stealth preferences you set on the Settings page.</li>
-        <li>Your account email and subscription tier, if you create an account.</li>
+        <li>Your account identifier, subscription tier, status and related account details.</li>
+        <li>A session cookie that keeps you signed in.</li>
       </ul>
       <h2>What we do not store</h2>
       <ul>
@@ -34,6 +37,12 @@ export const Route = createFileRoute("/privacy")({
       <p>
         Sites load through the proxy from their original hosts. Those hosts have their own privacy
         practices, which we do not control.
+      </p>
+      <h2>Safety and legal compliance</h2>
+      <p>
+        We may preserve or disclose limited account information when reasonably necessary to prevent
+        abuse, comply with law or protect users and the service. The proxy must not be used for illegal
+        material or cyberattacks.
       </p>
 
       <h2>Clearing your data</h2>

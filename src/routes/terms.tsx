@@ -4,27 +4,30 @@ import { LegalPage } from "@/components/LegalPage";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — Intonix Games" },
+      { title: "Terms of Service — IntonixUB" },
       {
         name: "description",
         content:
-          "The rules for using Intonix Games: acceptable use, third-party game content, and limits of liability.",
+          "Rules for using IntonixUB, including prohibited proxy activity, subscription terms, and limits of liability.",
       },
-      { property: "og:title", content: "Terms of Service — Intonix Games" },
-      { property: "og:description", content: "Acceptable use and content terms for Intonix Games." },
+      { property: "og:title", content: "Terms of Service — IntonixUB" },
+      { property: "og:description", content: "Acceptable use and subscription terms for IntonixUB." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (
     <LegalPage title="Terms of Service" updated="Reviewed September 2026">
       <p>
-        By using Intonix Games you agree to these terms. If you do not agree, please stop using the
+        By using IntonixUB you agree to these terms. If you do not agree, please stop using the
         site.
       </p>
       <h2>Acceptable use</h2>
       <ul>
         <li>Follow the rules of any network you are on, including school and workplace policies.</li>
-        <li>Do not use the site to harass others, distribute malware or break the law.</li>
-        <li>Do not attempt to disrupt, scrape at scale or overload the service.</li>
+        <li>Do not access, watch, share or download illegal material.</li>
+        <li>Do not launch, assist or conceal cyberattacks, malware, phishing or unauthorized access.</li>
+        <li>Do not harass others, evade lawful controls, scrape at scale, disrupt or overload services.</li>
       </ul>
       <h2>Content</h2>
       <p>
@@ -33,8 +36,15 @@ export const Route = createFileRoute("/terms")({
       </p>
       <h2>No warranty</h2>
       <p>
-        The service is provided "as is" without warranties of any kind. Availability can change
-        without notice, and we may terminate a subscription at any time without refund.
+        The service is provided "as is" without warranties of any kind. We do not guarantee that a
+        particular site, feature or connection will remain available.
+      </p>
+      <h2>Subscriptions, suspension and refunds</h2>
+      <p>
+        Paid access is a limited, revocable license. To the fullest extent permitted by law, payments
+        are final and non-refundable. We may suspend or terminate access at any time, including for a
+        suspected violation of these terms, without notice or refund. Nothing here limits rights that
+        cannot legally be waived in your jurisdiction.
       </p>
 
       <h2>Changes</h2>
