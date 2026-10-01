@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { FileText, Globe, Home, Settings, ShieldAlert, User } from "lucide-react";
+import { FileText, Globe, Home, Settings, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import { useIntonix } from "@/lib/intonix-store";
 import { useAuth } from "@/lib/auth";
 
@@ -25,16 +25,17 @@ export function SiteHeader() {
         <nav className="ml-auto hidden items-center gap-1 md:flex">
           {[
             ...NAV,
-            ...(session ? [{ to: "/account", label: "Account" } as const] : [{ to: "/auth", label: "Sign in" } as const]),
-            ...(isAdmin ? [{ to: "/admin", label: "Admin" } as const] : []),
-          ].map(({ to, label }) => (
+            ...(session ? [{ to: "/account", label: "Account", icon: User } as const] : [{ to: "/auth", label: "Sign in", icon: User } as const]),
+            ...(isAdmin ? [{ to: "/admin", label: "Admin", icon: ShieldCheck } as const] : []),
+          ].map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
               activeOptions={{ exact: to === "/" }}
               activeProps={{ className: "bg-secondary text-foreground" }}
-              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
+              <Icon className="size-4" />
               {label}
             </Link>
           ))}

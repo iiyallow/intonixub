@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { DEFAULT_PROXY_BASE, QUICK_LAUNCH, buildProxyUrl, normalizeTarget, type ProxyMode } from "@/lib/proxy";
+import { DEFAULT_PROXY_BASE, QUICK_LAUNCH, buildProxyUrl, faviconOf, normalizeTarget, type ProxyMode } from "@/lib/proxy";
 
 export const Route = createFileRoute("/proxy")({
   head: () => ({
@@ -194,7 +194,8 @@ function ProxyPage() {
                 aria-label={`Open ${item.label}`}
                 className="group relative grid size-9 shrink-0 place-items-center rounded-lg border border-border bg-secondary/45 text-xs font-bold text-muted-foreground transition-all hover:border-primary/60 hover:text-foreground hover:glow"
               >
-                {item.kind === "pin" ? <Star className="size-3.5 text-[var(--neon-pink)]" /> : markOf(item.url)}
+                <img src={faviconOf(item.url)} alt="" loading="lazy" className="size-4 rounded-sm" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                {item.kind === "pin" && <Star className="absolute -right-1 -top-1 size-2.5 fill-current text-[var(--neon-pink)]" />}
               </button>
             ))}
           </aside>
