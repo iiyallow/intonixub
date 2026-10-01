@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { DEFAULT_PROXY_BASE, QUICK_LAUNCH, buildProxyUrl, faviconOf, normalizeTarget, type ProxyMode } from "@/lib/proxy";
+import { initUV, uvUrl } from "@/lib/uv";
 
 export const Route = createFileRoute("/proxy")({
   head: () => ({
