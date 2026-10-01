@@ -53,9 +53,6 @@ function hostOf(url: string) {
   }
 }
 
-function markOf(url: string) {
-  return hostOf(url).charAt(0).toUpperCase() || "•";
-}
 
 function ProxyPage() {
   const { loading, session, canProxy } = useAuth();
