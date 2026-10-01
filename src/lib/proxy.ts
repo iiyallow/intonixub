@@ -1,5 +1,14 @@
 /** Default proxy endpoint (admins can change it in Settings → Proxy engine). */
-export const DEFAULT_PROXY_BASE = "https://white-scene-b5b6.iyallowroblox.workers.dev";
+export const DEFAULT_PROXY_BASE = "https://kzcmrro7sine2i3tqbzch2y3jq0ozjjc.lambda-url.us-east-2.on.aws";
+
+/** Site icon for a URL. */
+export function faviconOf(url: string) {
+  try {
+    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`;
+  } catch {
+    return "";
+  }
+}
 
 export type ProxyMode = "query" | "encoded" | "path";
 
