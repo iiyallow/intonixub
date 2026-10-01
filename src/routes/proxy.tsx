@@ -123,8 +123,11 @@ function ProxyPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  const [uv, setUv] = useState<Awaited<ReturnType<typeof initUV>>>(null);
+  useEffect(() => { void initUV().then(setUv); }, []);
+
   const src = useMemo(
-    () => (target ? `${buildProxyUrl(base, mode, target)}${nonce ? `#${nonce}` : ""}` : ""),
+    () => (target ? `${uv ? uvUrl(uv, target) : buildProxyUrl(base, mode, target)}${nonce ? `#${nonce}` : ""}` : ""),
     [base, mode, target, nonce],
   );
   const pinned = target ? pins.includes(target) : false;
