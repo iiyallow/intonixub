@@ -128,7 +128,7 @@ function ProxyPage() {
 
   const src = useMemo(
     () => (target ? `${uv ? uvUrl(uv, target) : buildProxyUrl(base, mode, target)}${nonce ? `#${nonce}` : ""}` : ""),
-    [base, mode, target, nonce],
+    [base, mode, target, nonce, uv],
   );
   const pinned = target ? pins.includes(target) : false;
 
