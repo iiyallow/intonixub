@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { DEFAULT_PROXY_BASE, QUICK_LAUNCH, buildProxyUrl, faviconOf, normalizeTarget, type ProxyMode } from "@/lib/proxy";
+import { initUV, uvUrl } from "@/lib/uv";
 
 export const Route = createFileRoute("/proxy")({
   head: () => ({
@@ -123,9 +124,12 @@ function ProxyPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  const [uv, setUv] = useState<Awaited<ReturnType<typeof initUV>>>(null);
+  useEffect(() => { void initUV().then(setUv); }, []);
+
   const src = useMemo(
-    () => (target ? `${buildProxyUrl(base, mode, target)}${nonce ? `#${nonce}` : ""}` : ""),
-    [base, mode, target, nonce],
+    () => (target ? `${uv ? uvUrl(uv, target) : buildProxyUrl(base, mode, target)}${nonce ? `#${nonce}` : ""}` : ""),
+    [base, mode, target, nonce, uv],
   );
   const pinned = target ? pins.includes(target) : false;
 

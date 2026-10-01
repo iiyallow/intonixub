@@ -16,6 +16,7 @@ import { IntonixProvider } from "@/lib/intonix-store";
 import { AuthProvider } from "@/lib/auth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { initUV } from "@/lib/uv";
 import { InteractiveBackdrop } from "@/components/InteractiveBackdrop";
 
 function NotFoundComponent() {
@@ -123,6 +124,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => { void initUV(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
