@@ -22,7 +22,7 @@ export function normalizeTarget(input: string) {
     ? value.startsWith("http")
       ? value
       : `https://${value}`
-    : `https://duckduckgo.com/?q=${encodeURIComponent(value)}`;
+    : `https://www.google.com/search?q=${encodeURIComponent(value)}`;
 }
 
 /** Build the proxied URL for a target site. */
@@ -36,9 +36,9 @@ export function buildProxyUrl(base: string, mode: ProxyMode, target: string) {
 }
 
 export const QUICK_LAUNCH = [
-  { name: "Discord", url: "https://discord.com/app", art: "linear-gradient(135deg,#5865f2,#3b45c4)" },
+  { name: "Discord", url: "https://discord.com/", art: "linear-gradient(135deg,#5865f2,#3b45c4)" },
   { name: "YouTube", url: "https://www.youtube.com/", art: "linear-gradient(135deg,#ff4e45,#b3120c)" },
-  { name: "Reddit", url: "https://www.reddit.com/", art: "linear-gradient(135deg,#ff8717,#d93a00)" },
+  { name: "Google", url: "https://www.google.com/", art: "linear-gradient(135deg,#4285f4,#34a853)" },
   { name: "Wikipedia", url: "https://en.wikipedia.org/", art: "linear-gradient(135deg,#9aa0a6,#4b4f54)" },
   { name: "Spotify", url: "https://open.spotify.com/", art: "linear-gradient(135deg,#1ed760,#0f7a37)" },
   { name: "GitHub", url: "https://github.com/", art: "linear-gradient(135deg,#6e7681,#24292f)" },
