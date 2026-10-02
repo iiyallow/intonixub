@@ -66,14 +66,14 @@ function ProxyPage() {
   const [base, setBase] = useState(DEFAULT_PROXY_BASE);
   const [mode, setMode] = useState<ProxyMode>("query");
   const [tabs, setTabs] = useState<Tab[]>(() => [newTab()]);
-  const [activeId, setActiveId] = useState(tabs[0].id);
+  const [activeId, setActiveId] = useState(tabs[0]!.id);
   const [input, setInput] = useState("");
   const [pins, setPins] = useState<string[]>([]);
   const [full, setFull] = useState(false);
   const [uv, setUv] = useState<Awaited<ReturnType<typeof initUV>>>(null);
   const frames = useRef(new Map<number, HTMLIFrameElement>());
   const inputRef = useRef<HTMLInputElement>(null);
-  const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
+  const active = (tabs.find((t) => t.id === activeId) ?? tabs[0])!;
 
   useEffect(() => {
     setPins(loadPins());
@@ -113,7 +113,7 @@ function ProxyPage() {
         setActiveId(t.id);
         return [t];
       }
-      if (id === activeId) setActiveId(rest[Math.max(0, i - 1)].id);
+      if (id === activeId) setActiveId(rest[Math.max(0, i - 1)]!.id);
       return rest;
     });
     frames.current.delete(id);
