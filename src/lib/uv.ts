@@ -22,8 +22,21 @@ export function initUV(): Promise<UVConfig | null> {
       await loadScript("/uv/uv.bundle.js");
       await loadScript("/uv/uv.config.js");
       const config = (window as unknown as { __uv$config: UVConfig }).__uv$config;
-      await navigator.serviceWorker.register("/uv/sw.js", { scope: config.prefix });
-      await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.register("/uv/sw.js", { scope: config.prefix });
+      // navigator.serviceWorker.ready can hang when the registration scope
+      // (/uv/service/) doesn't cover the page URL — wait for activation instead.
+      const worker = registration.active ?? registration.waiting ?? registration.installing;
+      if (worker && worker.state !== "activated") {
+        await new Promise<void>((resolve) => {
+          const timeout = window.setTimeout(resolve, 5000);
+          worker.addEventListener("statechange", () => {
+            if (worker.state === "activated") {
+              window.clearTimeout(timeout);
+              resolve();
+            }
+          });
+        });
+      }
       return config;
     } catch (error) {
       console.error("Ultraviolet init failed", error);
