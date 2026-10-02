@@ -3,7 +3,7 @@ name: Deploy IntonixUB to AWS Lambda
 on:
   push:
     branches:
-      - main # Or your default branch name
+      - main
 
 jobs:
   build-and-deploy:
@@ -13,22 +13,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci || npm install
+        run: bun install --frozen-lockfile
 
       - name: Build frontend
-        run: npm run build
+        run: bun run build
 
       - name: Prepare Lambda package
         run: |
           mkdir -p bundle
-          cp -r dist bundle/
+          # Copy dist if standard build, or .output/public for Nitro
+          if [ -d "dist" ]; then
+            cp -r dist bundle/
+          elif [ -d ".output/public" ]; then
+            cp -r .output/public bundle/dist
+          fi
           cp index.mjs bundle/
           cd bundle
           zip -r ../deploy-package.zip .
@@ -38,6 +42,6 @@ jobs:
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: us-east-2 # Change to your AWS region if different
-          function_name: intonix-mirror # Must match your Lambda function name exactly
+          aws_region: us-east-2
+          function_name: intonix-mirror
           zip_file: deploy-package.zip
