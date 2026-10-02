@@ -43,5 +43,4 @@ export const QUICK_LAUNCH = [
   { name: "Spotify", url: "https://open.spotify.com/", art: "linear-gradient(135deg,#1ed760,#0f7a37)" },
   { name: "GitHub", url: "https://github.com/", art: "linear-gradient(135deg,#6e7681,#24292f)" },
   { name: "Twitch", url: "https://www.twitch.tv/", art: "linear-gradient(135deg,#a970ff,#5c16c5)" },
-  { name: "X", url: "https://x.com/", art: "linear-gradient(135deg,#4b5563,#111827)" },
 ];
