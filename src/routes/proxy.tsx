@@ -36,7 +36,7 @@ export const Route = createFileRoute("/proxy")({
 });
 
 const PINS_KEY = "intonix:pins";
-const SHORTCUTS = [...QUICK_LAUNCH].sort((a, b) => (a.name === "Google" ? -1 : b.name === "Google" ? 1 : 0));
+const SHORTCUTS = [...QUICK_LAUNCH].sort((a, b) => (a.name === "DuckDuckGo" ? -1 : b.name === "DuckDuckGo" ? 1 : 0));
 
 type Tab = { id: number; url: string; title: string; loading: boolean; nonce: number };
 
@@ -250,7 +250,7 @@ function ProxyPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onFocus={(e) => e.currentTarget.select()}
-              placeholder="Search Google or type a URL"
+              placeholder="Search DuckDuckGo or type a URL"
               className="h-8 w-full rounded-full border border-transparent bg-background/80 pl-9 pr-9 text-sm outline-none focus:border-primary"
               autoCapitalize="none"
               spellCheck={false}
@@ -312,7 +312,7 @@ function NewTabPage({ onGo }: { onGo: (url: string) => void }) {
         <h1 className="font-display text-4xl font-bold sm:text-5xl">IntonixUB</h1>
         <form onSubmit={(e) => { e.preventDefault(); onGo(q); }} className="relative mt-8">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus placeholder="Search Google or type a URL" className="h-12 w-full rounded-full border border-border bg-secondary pl-11 pr-4 text-sm outline-none focus:border-primary" spellCheck={false} autoCapitalize="none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus placeholder="Search DuckDuckGo or type a URL" className="h-12 w-full rounded-full border border-border bg-secondary pl-11 pr-4 text-sm outline-none focus:border-primary" spellCheck={false} autoCapitalize="none" />
         </form>
         <div className="mt-8 grid grid-cols-4 gap-3 sm:gap-4">
           {SHORTCUTS.map((s) => (
