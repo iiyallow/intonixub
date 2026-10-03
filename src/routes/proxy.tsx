@@ -189,7 +189,7 @@ function ProxyPage() {
   );
 
   if (loading) return <p className="px-4 py-16 text-center text-sm text-muted-foreground">Loading…</p>;
-  if (!session || !canProxy) {
+  if (!canProxy) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <h1 className="font-display text-2xl font-extrabold">{session ? "Your plan doesn't include the console" : "Sign in to use the console"}</h1>
