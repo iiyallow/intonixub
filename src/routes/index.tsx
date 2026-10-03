@@ -4,16 +4,16 @@ import { Globe, Lock, ShieldCheck, Zap } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "IntonixUB — Fast, Private Web Access" },
+      { title: "IntonixUB — Your Study Workspace" },
       {
         name: "description",
         content:
-          "IntonixUB is a clean, fast web proxy console with stealth tools, tab cloaking and themeable dark UI.",
+          "IntonixUB is a clean, themeable study workspace for research and reading.",
       },
-      { property: "og:title", content: "IntonixUB — Fast, Private Web Access" },
+      { property: "og:title", content: "IntonixUB — Your Study Workspace" },
       {
         property: "og:description",
-        content: "A minimal, high-speed proxy console with stealth tools and full theming.",
+        content: "A minimal, fast workspace for research and reading.",
       },
     ],
   }),
@@ -24,17 +24,17 @@ const FEATURES = [
   {
     icon: Zap,
     title: "Instant connections",
-    body: "Routes through a dedicated edge worker for low-latency browsing.",
+    body: "Fast, low-latency page loading from anywhere.",
   },
   {
     icon: Lock,
-    title: "Stealth built in",
-    body: "Tab cloaking, panic key and about:blank launching, all configurable.",
+    title: "Focus tools",
+    body: "Quick-hide key, custom tab titles and new-window launching.",
   },
   {
     icon: ShieldCheck,
     title: "Clear rules",
-    body: "No illegal media and no attack traffic — read the terms before you connect.",
+    body: "No illegal media and no harmful traffic — read the terms before you connect.",
   },
 ];
 
@@ -45,13 +45,13 @@ function HomePage() {
         <div className="absolute inset-0 bg-mesh opacity-60" aria-hidden />
         <div className="relative max-w-2xl">
           <span className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs font-semibold tracking-wide uppercase">
-            <Globe className="size-3.5 text-primary" /> Private web console
+            <Globe className="size-3.5 text-primary" /> Study workspace
           </span>
           <h1 className="mt-4 text-4xl font-extrabold md:text-6xl">
             Intonix<span className="text-primary text-glow">UB</span>
           </h1>
           <p className="mt-3 text-muted-foreground">
-            A distraction-free console for reaching the sites you need, with stealth tools and a
+            A distraction-free console for reaching the sites you need, with focus tools and a
             fully themeable dark interface.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
