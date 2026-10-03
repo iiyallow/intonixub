@@ -64,12 +64,8 @@ export function tierLabel(tier: Tier) {
   return { free: "Free", plus: "Plus", pro: "Pro", lifetime: "Lifetime" }[tier];
 }
 
-export function hasProxyAccess(profile: Profile | null, isAdmin: boolean) {
-  if (isAdmin) return true;
-  if (!profile) return false;
-  if (profile.tier === "free") return false;
-  if (profile.status !== "active" && profile.status !== "trialing") return false;
-  if (profile.expires_at && new Date(profile.expires_at).getTime() < Date.now()) return false;
+export function hasProxyAccess(_profile: Profile | null, _isAdmin: boolean) {
+  // Free for everyone — no membership required.
   return true;
 }
 

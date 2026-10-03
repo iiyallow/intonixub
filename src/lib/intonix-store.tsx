@@ -37,6 +37,8 @@ export const CLOAK_PRESETS: CloakPreset[] = [
   { id: "none", title: "IntonixUB", favicon: "/favicon.ico" },
   { id: "drive", title: "My Drive - Google Drive", favicon: "https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png" },
   { id: "classroom", title: "Classes", favicon: "https://ssl.gstatic.com/classroom/favicon.png" },
+  { id: "launchpad", title: "ClassLink LaunchPad", favicon: "https://launchpad.classlink.com/favicon.ico" },
+  { id: "launchpad-login", title: "Login - ClassLink", favicon: "https://launchpad.classlink.com/favicon.ico" },
   { id: "canvas", title: "Dashboard", favicon: "https://canvas.instructure.com/favicon.ico" },
   { id: "powerschool", title: "PowerSchool SIS", favicon: "https://www.powerschool.com/favicon.ico" },
   { id: "docs", title: "Untitled document - Google Docs", favicon: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" },
@@ -45,6 +47,7 @@ export const CLOAK_PRESETS: CloakPreset[] = [
 export const PANIC_TARGETS = [
   { id: "classroom", label: "Google Classroom", url: "https://classroom.google.com/" },
   { id: "canvas", label: "Canvas", url: "https://canvas.instructure.com/" },
+  { id: "launchpad", label: "ClassLink LaunchPad", url: "https://launchpad.classlink.com/" },
   { id: "drive", label: "Google Drive", url: "https://drive.google.com/" },
   { id: "docs", label: "Google Docs", url: "https://docs.google.com/document/u/0/" },
   { id: "wikipedia", label: "Wikipedia", url: "https://en.wikipedia.org/" },
