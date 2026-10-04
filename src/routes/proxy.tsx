@@ -219,7 +219,7 @@ function ProxyPage() {
                 aria-selected={on}
                 onClick={() => setActiveId(t.id)}
                 onAuxClick={(e) => { if (e.button === 1) closeTab(t.id); }}
-                className={`group relative flex h-9 w-48 min-w-28 shrink cursor-pointer items-center gap-2 rounded-t-xl px-3 text-xs transition-all duration-200 ${on ? "bg-secondary text-foreground shadow-[0_-1px_0_0_var(--primary)_inset,0_0_18px_-6px_var(--primary)]" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}
+                className={`group relative flex h-9 w-48 min-w-28 shrink cursor-pointer items-center gap-2 rounded-t-xl px-3 text-xs transition-colors duration-200 ${on ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}
               >
                 {on && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary" aria-hidden />}
                 {t.loading ? (
