@@ -203,9 +203,9 @@ function ProxyPage() {
 
   return (
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
-      <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-xl"}`}>
+      <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-2xl glow"}`}>
         {/* Tab strip */}
-        <div className="no-scrollbar flex items-end gap-0.5 overflow-x-auto bg-background/70 px-2 pt-2">
+        <div className="no-scrollbar flex items-end gap-1 overflow-x-auto border-b border-border bg-background/80 px-2 pt-2 backdrop-blur">
           {tabs.map((t) => {
             const on = t.id === activeId;
             return (
@@ -215,8 +215,9 @@ function ProxyPage() {
                 aria-selected={on}
                 onClick={() => setActiveId(t.id)}
                 onAuxClick={(e) => { if (e.button === 1) closeTab(t.id); }}
-                className={`group relative flex h-9 w-48 min-w-28 shrink cursor-pointer items-center gap-2 rounded-t-lg px-3 text-xs transition-colors ${on ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50"}`}
+                className={`group relative flex h-9 w-48 min-w-28 shrink cursor-pointer items-center gap-2 rounded-t-xl px-3 text-xs transition-all duration-200 ${on ? "bg-secondary text-foreground shadow-[0_-1px_0_0_var(--primary)_inset,0_0_18px_-6px_var(--primary)]" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}
               >
+                {on && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary" aria-hidden />}
                 {t.loading ? (
                   <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 ) : t.url ? (
@@ -225,7 +226,7 @@ function ProxyPage() {
                   <Globe className="size-3.5 shrink-0" />
                 )}
                 <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                <button type="button" aria-label="Close tab" onClick={(e) => { e.stopPropagation(); closeTab(t.id); }} className="grid size-5 shrink-0 place-items-center rounded-full opacity-70 hover:bg-muted hover:opacity-100">
+                <button type="button" aria-label="Close tab" onClick={(e) => { e.stopPropagation(); closeTab(t.id); }} className="grid size-5 shrink-0 place-items-center rounded-full opacity-0 transition-opacity hover:bg-muted group-hover:opacity-70 hover:!opacity-100">
                   <X className="size-3" />
                 </button>
               </div>
