@@ -3,9 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
+  Copy,
   EyeOff,
   ExternalLink,
   Globe,
+  Home,
   Lock,
   Maximize2,
   Minimize2,
@@ -70,6 +73,7 @@ function ProxyPage() {
   const [input, setInput] = useState("");
   const [pins, setPins] = useState<string[]>([]);
   const [full, setFull] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [uv, setUv] = useState<Awaited<ReturnType<typeof initUV>>>(null);
   const frames = useRef(new Map<number, HTMLIFrameElement>());
   const inputRef = useRef<HTMLInputElement>(null);
@@ -242,7 +246,7 @@ function ProxyPage() {
           <Tool label="Back" disabled={!active.url} onClick={() => frameHistory("back")}><ArrowLeft /></Tool>
           <Tool label="Forward" disabled={!active.url} onClick={() => frameHistory("forward")}><ArrowRight /></Tool>
           <Tool label="Reload" disabled={!active.url} onClick={reload}><RotateCw className={active.loading ? "animate-spin" : ""} /></Tool>
-          <Tool label="Home (new tab)" onClick={() => navigate("", activeId)}><Home /></Tool>
+          <Tool label="Home (new tab)" onClick={() => patch(activeId, { url: "", title: "New Tab", loading: false })}><Home /></Tool>
           <form onSubmit={(e) => { e.preventDefault(); navigate(input); inputRef.current?.blur(); }} className="relative mx-1 min-w-0 flex-1">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               {active.url ? (secure ? <Lock className="size-3.5" /> : <Globe className="size-3.5" />) : <Search className="size-3.5" />}
@@ -310,20 +314,22 @@ function ProxyPage() {
 function NewTabPage({ onGo }: { onGo: (url: string) => void }) {
   const [q, setQ] = useState("");
   return (
-    <div className="flex h-full items-center justify-center overflow-y-auto px-6 py-10">
-      <div className="w-full max-w-xl text-center">
-        <h1 className="font-display text-4xl font-bold sm:text-5xl">IntonixUB</h1>
+    <div className="relative flex h-full items-center justify-center overflow-y-auto px-6 py-10">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40rem_20rem_at_50%_0%,color-mix(in_oklab,var(--primary)_14%,transparent),transparent)]" aria-hidden />
+      <div className="relative w-full max-w-xl text-center">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-glow sm:text-5xl">Intonix<span className="text-primary">UB</span></h1>
+        <p className="mt-2 text-xs text-muted-foreground">Your study workspace — pick up where you left off.</p>
         <form onSubmit={(e) => { e.preventDefault(); onGo(q); }} className="relative mt-8">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus placeholder="Search DuckDuckGo or type a URL" className="h-12 w-full rounded-full border border-border bg-secondary pl-11 pr-4 text-sm outline-none focus:border-primary" spellCheck={false} autoCapitalize="none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus placeholder="Search DuckDuckGo or type a URL" className="h-12 w-full rounded-full border border-border bg-secondary/80 pl-11 pr-4 text-sm outline-none backdrop-blur transition-shadow focus:border-primary focus:shadow-[0_0_0_1px_var(--primary),0_0_24px_-6px_var(--primary)]" spellCheck={false} autoCapitalize="none" />
         </form>
         <div className="mt-8 grid grid-cols-4 gap-3 sm:gap-4">
           {SHORTCUTS.map((s) => (
-            <button key={s.url} type="button" onClick={() => onGo(s.url)} className="group flex flex-col items-center gap-2 rounded-xl p-2 hover:bg-secondary">
-              <span className="grid size-12 place-items-center rounded-full bg-secondary group-hover:bg-background">
+            <button key={s.url} type="button" onClick={() => onGo(s.url)} className="group flex flex-col items-center gap-2 rounded-xl p-2 transition-colors hover:bg-secondary/70">
+              <span className="grid size-12 place-items-center rounded-full border border-border bg-secondary transition-all duration-200 group-hover:scale-105 group-hover:border-primary/50 group-hover:shadow-[0_0_18px_-6px_var(--primary)]">
                 <img src={faviconOf(s.url)} alt="" className="size-6" />
               </span>
-              <span className="w-full truncate text-xs text-muted-foreground">{s.name}</span>
+              <span className="w-full truncate text-xs text-muted-foreground group-hover:text-foreground">{s.name}</span>
             </button>
           ))}
         </div>
