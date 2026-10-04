@@ -238,10 +238,11 @@ function ProxyPage() {
         </div>
 
         {/* Toolbar + omnibox */}
-        <div className="flex items-center gap-1 bg-secondary px-2 py-1.5">
+        <div className="flex items-center gap-1 border-b border-border bg-secondary/80 px-2 py-1.5 backdrop-blur">
           <Tool label="Back" disabled={!active.url} onClick={() => frameHistory("back")}><ArrowLeft /></Tool>
           <Tool label="Forward" disabled={!active.url} onClick={() => frameHistory("forward")}><ArrowRight /></Tool>
           <Tool label="Reload" disabled={!active.url} onClick={reload}><RotateCw className={active.loading ? "animate-spin" : ""} /></Tool>
+          <Tool label="Home (new tab)" onClick={() => navigate("", activeId)}><Home /></Tool>
           <form onSubmit={(e) => { e.preventDefault(); navigate(input); inputRef.current?.blur(); }} className="relative mx-1 min-w-0 flex-1">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               {active.url ? (secure ? <Lock className="size-3.5" /> : <Globe className="size-3.5" />) : <Search className="size-3.5" />}
@@ -252,7 +253,7 @@ function ProxyPage() {
               onChange={(e) => setInput(e.target.value)}
               onFocus={(e) => e.currentTarget.select()}
               placeholder="Search DuckDuckGo or type a URL"
-              className="h-8 w-full rounded-full border border-transparent bg-background/80 pl-9 pr-9 text-sm outline-none focus:border-primary"
+              className="h-8 w-full rounded-full border border-transparent bg-background/80 pl-9 pr-9 text-sm outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_1px_var(--primary),0_0_20px_-6px_var(--primary)]"
               autoCapitalize="none"
               spellCheck={false}
             />
@@ -260,15 +261,16 @@ function ProxyPage() {
               <Star className={`size-3.5 ${pinned ? "fill-current text-[var(--neon-pink)]" : ""}`} />
             </button>
           </form>
+          <Tool label="Copy address" disabled={!active.url} onClick={() => { void navigator.clipboard?.writeText(active.url); setCopied(true); window.setTimeout(() => setCopied(false), 1200); }}>{copied ? <Check className="text-[var(--neon-cyan)]" /> : <Copy />}</Tool>
           <Tool label="Open in about:blank" disabled={!active.url} onClick={openStealthTab}><ExternalLink /></Tool>
           <Tool label="Panic (go to Google Classroom)" onClick={() => window.location.replace("https://classroom.google.com")}><EyeOff /></Tool>
           <Tool label={full ? "Exit fullscreen" : "Fullscreen"} onClick={() => setFull((v) => !v)}>{full ? <Minimize2 /> : <Maximize2 />}</Tool>
         </div>
 
         {/* Bookmarks bar */}
-        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-border bg-secondary px-2 pb-1.5">
+        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-border bg-secondary/60 px-2 py-1 backdrop-blur">
           {bookmarks.map((b) => (
-            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground hover:bg-background/60 hover:text-foreground">
+            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground">
               <img src={faviconOf(b.url)} alt="" className="size-3.5 rounded-sm" />
               {b.label}
             </button>
