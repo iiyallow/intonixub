@@ -3,9 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
+  Copy,
   EyeOff,
   ExternalLink,
   Globe,
+  Home,
   Lock,
   Maximize2,
   Minimize2,
@@ -70,6 +73,7 @@ function ProxyPage() {
   const [input, setInput] = useState("");
   const [pins, setPins] = useState<string[]>([]);
   const [full, setFull] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [uv, setUv] = useState<Awaited<ReturnType<typeof initUV>>>(null);
   const frames = useRef(new Map<number, HTMLIFrameElement>());
   const inputRef = useRef<HTMLInputElement>(null);
@@ -203,9 +207,9 @@ function ProxyPage() {
 
   return (
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
-      <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-xl"}`}>
+      <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-2xl glow"}`}>
         {/* Tab strip */}
-        <div className="no-scrollbar flex items-end gap-0.5 overflow-x-auto bg-background/70 px-2 pt-2">
+        <div className="no-scrollbar flex items-end gap-1 overflow-x-auto border-b border-border bg-background/80 px-2 pt-2 backdrop-blur">
           {tabs.map((t) => {
             const on = t.id === activeId;
             return (
@@ -215,8 +219,9 @@ function ProxyPage() {
                 aria-selected={on}
                 onClick={() => setActiveId(t.id)}
                 onAuxClick={(e) => { if (e.button === 1) closeTab(t.id); }}
-                className={`group relative flex h-9 w-48 min-w-28 shrink cursor-pointer items-center gap-2 rounded-t-lg px-3 text-xs transition-colors ${on ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50"}`}
+                className={`group relative flex h-9 w-48 min-w-28 shrink cursor-pointer items-center gap-2 rounded-t-xl px-3 text-xs transition-all duration-200 ${on ? "bg-secondary text-foreground shadow-[0_-1px_0_0_var(--primary)_inset,0_0_18px_-6px_var(--primary)]" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}
               >
+                {on && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary" aria-hidden />}
                 {t.loading ? (
                   <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 ) : t.url ? (
@@ -225,7 +230,7 @@ function ProxyPage() {
                   <Globe className="size-3.5 shrink-0" />
                 )}
                 <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                <button type="button" aria-label="Close tab" onClick={(e) => { e.stopPropagation(); closeTab(t.id); }} className="grid size-5 shrink-0 place-items-center rounded-full opacity-70 hover:bg-muted hover:opacity-100">
+                <button type="button" aria-label="Close tab" onClick={(e) => { e.stopPropagation(); closeTab(t.id); }} className="grid size-5 shrink-0 place-items-center rounded-full opacity-0 transition-opacity hover:bg-muted group-hover:opacity-70 hover:!opacity-100">
                   <X className="size-3" />
                 </button>
               </div>
@@ -237,10 +242,11 @@ function ProxyPage() {
         </div>
 
         {/* Toolbar + omnibox */}
-        <div className="flex items-center gap-1 bg-secondary px-2 py-1.5">
+        <div className="flex items-center gap-1 border-b border-border bg-secondary/80 px-2 py-1.5 backdrop-blur">
           <Tool label="Back" disabled={!active.url} onClick={() => frameHistory("back")}><ArrowLeft /></Tool>
           <Tool label="Forward" disabled={!active.url} onClick={() => frameHistory("forward")}><ArrowRight /></Tool>
           <Tool label="Reload" disabled={!active.url} onClick={reload}><RotateCw className={active.loading ? "animate-spin" : ""} /></Tool>
+          <Tool label="Home (new tab)" onClick={() => patch(activeId, { url: "", title: "New Tab", loading: false })}><Home /></Tool>
           <form onSubmit={(e) => { e.preventDefault(); navigate(input); inputRef.current?.blur(); }} className="relative mx-1 min-w-0 flex-1">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               {active.url ? (secure ? <Lock className="size-3.5" /> : <Globe className="size-3.5" />) : <Search className="size-3.5" />}
@@ -251,7 +257,7 @@ function ProxyPage() {
               onChange={(e) => setInput(e.target.value)}
               onFocus={(e) => e.currentTarget.select()}
               placeholder="Search DuckDuckGo or type a URL"
-              className="h-8 w-full rounded-full border border-transparent bg-background/80 pl-9 pr-9 text-sm outline-none focus:border-primary"
+              className="h-8 w-full rounded-full border border-transparent bg-background/80 pl-9 pr-9 text-sm outline-none transition-shadow focus:border-primary focus:shadow-[0_0_0_1px_var(--primary),0_0_20px_-6px_var(--primary)]"
               autoCapitalize="none"
               spellCheck={false}
             />
@@ -259,15 +265,16 @@ function ProxyPage() {
               <Star className={`size-3.5 ${pinned ? "fill-current text-[var(--neon-pink)]" : ""}`} />
             </button>
           </form>
+          <Tool label="Copy address" disabled={!active.url} onClick={() => { void navigator.clipboard?.writeText(active.url); setCopied(true); window.setTimeout(() => setCopied(false), 1200); }}>{copied ? <Check className="text-[var(--neon-cyan)]" /> : <Copy />}</Tool>
           <Tool label="Open in about:blank" disabled={!active.url} onClick={openStealthTab}><ExternalLink /></Tool>
           <Tool label="Panic (go to Google Classroom)" onClick={() => window.location.replace("https://classroom.google.com")}><EyeOff /></Tool>
           <Tool label={full ? "Exit fullscreen" : "Fullscreen"} onClick={() => setFull((v) => !v)}>{full ? <Minimize2 /> : <Maximize2 />}</Tool>
         </div>
 
         {/* Bookmarks bar */}
-        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-border bg-secondary px-2 pb-1.5">
+        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-border bg-secondary/60 px-2 py-1 backdrop-blur">
           {bookmarks.map((b) => (
-            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground hover:bg-background/60 hover:text-foreground">
+            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground">
               <img src={faviconOf(b.url)} alt="" className="size-3.5 rounded-sm" />
               {b.label}
             </button>
@@ -307,20 +314,22 @@ function ProxyPage() {
 function NewTabPage({ onGo }: { onGo: (url: string) => void }) {
   const [q, setQ] = useState("");
   return (
-    <div className="flex h-full items-center justify-center overflow-y-auto px-6 py-10">
-      <div className="w-full max-w-xl text-center">
-        <h1 className="font-display text-4xl font-bold sm:text-5xl">IntonixUB</h1>
+    <div className="relative flex h-full items-center justify-center overflow-y-auto px-6 py-10">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40rem_20rem_at_50%_0%,color-mix(in_oklab,var(--primary)_14%,transparent),transparent)]" aria-hidden />
+      <div className="relative w-full max-w-xl text-center">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-glow sm:text-5xl">Intonix<span className="text-primary">UB</span></h1>
+        <p className="mt-2 text-xs text-muted-foreground">Your study workspace — pick up where you left off.</p>
         <form onSubmit={(e) => { e.preventDefault(); onGo(q); }} className="relative mt-8">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus placeholder="Search DuckDuckGo or type a URL" className="h-12 w-full rounded-full border border-border bg-secondary pl-11 pr-4 text-sm outline-none focus:border-primary" spellCheck={false} autoCapitalize="none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus placeholder="Search DuckDuckGo or type a URL" className="h-12 w-full rounded-full border border-border bg-secondary/80 pl-11 pr-4 text-sm outline-none backdrop-blur transition-shadow focus:border-primary focus:shadow-[0_0_0_1px_var(--primary),0_0_24px_-6px_var(--primary)]" spellCheck={false} autoCapitalize="none" />
         </form>
         <div className="mt-8 grid grid-cols-4 gap-3 sm:gap-4">
           {SHORTCUTS.map((s) => (
-            <button key={s.url} type="button" onClick={() => onGo(s.url)} className="group flex flex-col items-center gap-2 rounded-xl p-2 hover:bg-secondary">
-              <span className="grid size-12 place-items-center rounded-full bg-secondary group-hover:bg-background">
+            <button key={s.url} type="button" onClick={() => onGo(s.url)} className="group flex flex-col items-center gap-2 rounded-xl p-2 transition-colors hover:bg-secondary/70">
+              <span className="grid size-12 place-items-center rounded-full border border-border bg-secondary transition-all duration-200 group-hover:scale-105 group-hover:border-primary/50 group-hover:shadow-[0_0_18px_-6px_var(--primary)]">
                 <img src={faviconOf(s.url)} alt="" className="size-6" />
               </span>
-              <span className="w-full truncate text-xs text-muted-foreground">{s.name}</span>
+              <span className="w-full truncate text-xs text-muted-foreground group-hover:text-foreground">{s.name}</span>
             </button>
           ))}
         </div>
