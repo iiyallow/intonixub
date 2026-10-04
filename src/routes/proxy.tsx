@@ -209,7 +209,7 @@ function ProxyPage() {
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
       <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-2xl glow"}`}>
         {/* Tab strip */}
-        <div className="no-scrollbar flex items-end gap-1 overflow-x-auto border-b border-border bg-background/80 px-2 pt-2 backdrop-blur">
+        <div className="no-scrollbar flex h-12 items-end overflow-x-auto border-b border-border bg-background/80 px-2 pt-1 backdrop-blur">
           {tabs.map((t) => {
             const on = t.id === activeId;
             return (
@@ -219,24 +219,25 @@ function ProxyPage() {
                 aria-selected={on}
                 onClick={() => setActiveId(t.id)}
                 onAuxClick={(e) => { if (e.button === 1) closeTab(t.id); }}
-                className={`group relative flex h-9 w-48 min-w-28 shrink cursor-pointer items-center gap-2 rounded-t-xl px-3 text-xs transition-colors duration-200 ${on ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}
+                className={`group relative flex h-10 w-56 min-w-36 shrink cursor-pointer items-center gap-2.5 rounded-t-2xl px-4 text-[13px] transition-colors duration-200 ${on ? "z-10 bg-secondary text-foreground" : "text-muted-foreground after:absolute after:right-0 after:top-2.5 after:h-5 after:w-px after:bg-border hover:bg-secondary/50 hover:text-foreground hover:after:opacity-0"}`}
               >
-                {on && <span className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary" aria-hidden />}
                 {t.loading ? (
-                  <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 ) : t.url ? (
-                  <img src={faviconOf(t.url)} alt="" className="size-3.5 shrink-0 rounded-sm" />
+                  <img src={faviconOf(t.url)} alt="" className="size-4 shrink-0 rounded-full" />
                 ) : (
-                  <Globe className="size-3.5 shrink-0" />
+                  <span className="grid size-4 shrink-0 place-items-center rounded-full bg-primary/20 text-primary">
+                    <Globe className="size-3" />
+                  </span>
                 )}
                 <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                <button type="button" aria-label="Close tab" onClick={(e) => { e.stopPropagation(); closeTab(t.id); }} className="grid size-5 shrink-0 place-items-center rounded-full opacity-0 transition-opacity hover:bg-muted group-hover:opacity-70 hover:!opacity-100">
-                  <X className="size-3" />
+                <button type="button" aria-label="Close tab" onClick={(e) => { e.stopPropagation(); closeTab(t.id); }} className="grid size-6 shrink-0 place-items-center rounded-full opacity-70 transition-colors hover:bg-muted hover:opacity-100">
+                  <X className="size-4" />
                 </button>
               </div>
             );
           })}
-          <button type="button" aria-label="New tab" title="New tab (Ctrl+Alt+T)" onClick={() => addTab()} className="mb-1 ml-1 grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground">
+          <button type="button" aria-label="New tab" title="New tab (Ctrl+Alt+T)" onClick={() => addTab()} className="mb-1 ml-2 grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground">
             <Plus className="size-4" />
           </button>
         </div>
