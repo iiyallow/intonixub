@@ -209,7 +209,7 @@ function ProxyPage() {
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
       <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-xl"}`}>
         {/* Tab strip */}
-        <div className="no-scrollbar flex h-11 items-end overflow-x-auto bg-secondary/60 px-2 backdrop-blur">
+        <div className="no-scrollbar flex h-11 items-end overflow-x-auto border-b border-border bg-background/80 px-2 backdrop-blur">
           {tabs.map((t) => {
             const on = t.id === activeId;
             return (
@@ -219,12 +219,12 @@ function ProxyPage() {
                 aria-selected={on}
                 onClick={() => setActiveId(t.id)}
                 onAuxClick={(e) => { if (e.button === 1) closeTab(t.id); }}
-                className={`group relative flex h-9 w-48 min-w-32 shrink cursor-pointer items-center gap-2 rounded-t-lg px-3 text-xs transition-colors duration-200 ${on ? "z-10 bg-background text-foreground" : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"}`}
+                className={`group relative flex h-9 w-48 min-w-32 shrink cursor-pointer items-center gap-2 rounded-t-lg px-3 text-xs transition-colors duration-200 ${on ? "z-10 bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}
               >
                 {on && (
                   <>
-                    <span aria-hidden className="pointer-events-none absolute -bottom-px -left-2 size-2 overflow-hidden before:absolute before:-left-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[4px_4px_0_0_var(--background)]" />
-                    <span aria-hidden className="pointer-events-none absolute -bottom-px -right-2 size-2 overflow-hidden before:absolute before:-right-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[-4px_4px_0_0_var(--background)]" />
+                    <span aria-hidden className="pointer-events-none absolute -bottom-px -left-2 size-2 overflow-hidden before:absolute before:-left-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[4px_4px_0_0_var(--secondary)]" />
+                    <span aria-hidden className="pointer-events-none absolute -bottom-px -right-2 size-2 overflow-hidden before:absolute before:-right-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[-4px_4px_0_0_var(--secondary)]" />
                   </>
                 )}
                 {t.loading ? (
@@ -249,7 +249,7 @@ function ProxyPage() {
         </div>
 
         {/* Toolbar + omnibox */}
-        <div className="flex items-center gap-1 bg-secondary/60 px-2 py-1.5 backdrop-blur">
+        <div className="flex items-center gap-1 border-b border-border bg-secondary/80 px-2 py-1.5 backdrop-blur">
           <Tool label="Back" disabled={!active.url} onClick={() => frameHistory("back")}><ArrowLeft /></Tool>
           <Tool label="Forward" disabled={!active.url} onClick={() => frameHistory("forward")}><ArrowRight /></Tool>
           <Tool label="Reload" disabled={!active.url} onClick={reload}><RotateCw className={active.loading ? "animate-spin" : ""} /></Tool>
@@ -279,9 +279,9 @@ function ProxyPage() {
         </div>
 
         {/* Bookmarks bar */}
-        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto bg-secondary/60 px-2 pb-1.5 pt-0.5 backdrop-blur">
+        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-border bg-secondary/60 px-2 py-1 backdrop-blur">
           {bookmarks.map((b) => (
-            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground">
               <img src={faviconOf(b.url)} alt="" className="size-3.5 rounded-sm" />
               {b.label}
             </button>
