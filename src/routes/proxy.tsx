@@ -223,8 +223,8 @@ function ProxyPage() {
               >
                 {on && (
                   <>
-                    <span aria-hidden className="pointer-events-none absolute -bottom-px -left-2 size-2 overflow-hidden before:absolute before:-left-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[4px_4px_0_0_var(--secondary)]" />
-                    <span aria-hidden className="pointer-events-none absolute -bottom-px -right-2 size-2 overflow-hidden before:absolute before:-right-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[-4px_4px_0_0_var(--secondary)]" />
+                    <span aria-hidden className="pointer-events-none absolute -bottom-px -left-2 size-2 overflow-hidden before:absolute before:-left-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[4px_4px_0_0_var(--background)]" />
+                    <span aria-hidden className="pointer-events-none absolute -bottom-px -right-2 size-2 overflow-hidden before:absolute before:-right-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[-4px_4px_0_0_var(--background)]" />
                   </>
                 )}
                 {t.loading ? (
