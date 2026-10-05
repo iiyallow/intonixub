@@ -12,3 +12,4 @@
 - [x] Expanded legal: prohibited uses, no refunds, termination at any time
 - [ ] Proxy engine limitation: your worker returns pages without rewriting styles/scripts, so sites load unstyled
 - [x] Electric Night redesign, interactive backgrounds, compact bookmark rail, and console quality-of-life upgrades
+- [x] Chrome-style tab search, recently closed tabs, and omnibox bookmarklet execution
