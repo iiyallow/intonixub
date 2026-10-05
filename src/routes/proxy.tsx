@@ -209,7 +209,7 @@ function ProxyPage() {
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
       <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-xl"}`}>
         {/* Tab strip */}
-        <div className="no-scrollbar flex h-11 items-end overflow-x-auto border-b border-border bg-background/80 px-2 backdrop-blur">
+        <div className="no-scrollbar flex h-11 items-end overflow-x-auto bg-secondary/60 px-2 backdrop-blur">
           {tabs.map((t) => {
             const on = t.id === activeId;
             return (
