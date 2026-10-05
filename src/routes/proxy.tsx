@@ -249,7 +249,7 @@ function ProxyPage() {
         </div>
 
         {/* Toolbar + omnibox */}
-        <div className="flex items-center gap-1 border-b border-border bg-secondary/80 px-2 py-1.5 backdrop-blur">
+        <div className="flex items-center gap-1 bg-secondary/60 px-2 py-1.5 backdrop-blur">
           <Tool label="Back" disabled={!active.url} onClick={() => frameHistory("back")}><ArrowLeft /></Tool>
           <Tool label="Forward" disabled={!active.url} onClick={() => frameHistory("forward")}><ArrowRight /></Tool>
           <Tool label="Reload" disabled={!active.url} onClick={reload}><RotateCw className={active.loading ? "animate-spin" : ""} /></Tool>
