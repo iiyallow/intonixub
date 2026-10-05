@@ -279,9 +279,9 @@ function ProxyPage() {
         </div>
 
         {/* Bookmarks bar */}
-        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-border bg-secondary/60 px-2 py-1 backdrop-blur">
+        <div className="no-scrollbar flex items-center gap-1 overflow-x-auto bg-secondary/60 px-2 pb-1.5 pt-0.5 backdrop-blur">
           {bookmarks.map((b) => (
-            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground">
+            <button key={b.url} type="button" onClick={() => navigate(b.url)} className="flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
               <img src={faviconOf(b.url)} alt="" className="size-3.5 rounded-sm" />
               {b.label}
             </button>
