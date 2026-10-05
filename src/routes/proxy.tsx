@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronDown,
   Copy,
   EyeOff,
   ExternalLink,
@@ -42,6 +43,7 @@ const PINS_KEY = "intonix:pins";
 const SHORTCUTS = [...QUICK_LAUNCH].sort((a, b) => (a.name === "DuckDuckGo" ? -1 : b.name === "DuckDuckGo" ? 1 : 0));
 
 type Tab = { id: number; url: string; title: string; loading: boolean; nonce: number };
+type ClosedTab = Omit<Tab, "id" | "loading" | "nonce">;
 
 function loadPins(): string[] {
   if (typeof localStorage === "undefined") return [];
@@ -74,9 +76,15 @@ function ProxyPage() {
   const [pins, setPins] = useState<string[]>([]);
   const [full, setFull] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [tabSearchOpen, setTabSearchOpen] = useState(false);
+  const [tabQuery, setTabQuery] = useState("");
+  const [recentlyClosed, setRecentlyClosed] = useState<ClosedTab[]>([]);
+  const [bookmarkletMessage, setBookmarkletMessage] = useState("");
   const [uv, setUv] = useState<Awaited<ReturnType<typeof initUV>>>(null);
   const frames = useRef(new Map<number, HTMLIFrameElement>());
   const inputRef = useRef<HTMLInputElement>(null);
+  const tabSearchRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef(tabs);
   const active = (tabs.find((t) => t.id === activeId) ?? tabs[0])!;
 
   useEffect(() => {
@@ -91,10 +99,34 @@ function ProxyPage() {
   }, []);
 
   useEffect(() => { setInput(active?.url ?? ""); }, [activeId, active?.url]);
+  useEffect(() => { tabsRef.current = tabs; }, [tabs]);
+
+  useEffect(() => {
+    if (!tabSearchOpen) return;
+    const closeSearch = (event: PointerEvent) => {
+      if (!tabSearchRef.current?.contains(event.target as Node)) setTabSearchOpen(false);
+    };
+    window.addEventListener("pointerdown", closeSearch);
+    return () => window.removeEventListener("pointerdown", closeSearch);
+  }, [tabSearchOpen]);
 
   const patch = useCallback((id: number, p: Partial<Tab>) => setTabs((ts) => ts.map((t) => (t.id === id ? { ...t, ...p } : t))), []);
 
   const navigate = useCallback((raw: string, id = activeId) => {
+    const value = raw.trim();
+    if (/^javascript:/i.test(value)) {
+      const code = value.replace(/^javascript:/i, "");
+      const frame = frames.current.get(id);
+      try {
+        if (!frame?.contentWindow) throw new Error("No active page");
+        frame.contentWindow.eval(code);
+        setBookmarkletMessage("Bookmarklet ran");
+      } catch {
+        setBookmarkletMessage("This page blocked the bookmarklet");
+      }
+      window.setTimeout(() => setBookmarkletMessage(""), 2200);
+      return;
+    }
     const url = normalizeTarget(raw);
     if (!url) return;
     patch(id, { url, title: hostOf(url), loading: true });
@@ -109,6 +141,10 @@ function ProxyPage() {
   }, []);
 
   const closeTab = useCallback((id: number) => {
+    const closing = tabsRef.current.find((tab) => tab.id === id);
+    if (closing?.url) {
+      setRecentlyClosed((items) => [{ url: closing.url, title: closing.title }, ...items].slice(0, 10));
+    }
     setTabs((ts) => {
       const i = ts.findIndex((t) => t.id === id);
       const rest = ts.filter((t) => t.id !== id);
@@ -129,6 +165,7 @@ function ProxyPage() {
       if (mod && e.key.toLowerCase() === "l") { e.preventDefault(); inputRef.current?.focus(); inputRef.current?.select(); }
       if (mod && e.altKey && e.key.toLowerCase() === "t") { e.preventDefault(); addTab(); }
       if (mod && e.altKey && e.key.toLowerCase() === "w") { e.preventDefault(); closeTab(activeId); }
+      if (mod && e.shiftKey && e.key.toLowerCase() === "a") { e.preventDefault(); setTabSearchOpen((open) => !open); }
       if (e.key === "Escape" && full && document.activeElement !== inputRef.current) setFull(false);
     };
     window.addEventListener("keydown", onKey);
@@ -191,6 +228,22 @@ function ProxyPage() {
     () => [...SHORTCUTS.map((s) => ({ label: s.name, url: s.url })), ...pins.filter((p) => !SHORTCUTS.some((s) => s.url === p)).map((url) => ({ label: hostOf(url), url }))],
     [pins],
   );
+  const normalizedTabQuery = tabQuery.trim().toLowerCase();
+  const matchingTabs = tabs.filter((tab) =>
+    !normalizedTabQuery || `${tab.title} ${tab.url}`.toLowerCase().includes(normalizedTabQuery),
+  );
+  const matchingClosed = recentlyClosed.filter((tab) =>
+    !normalizedTabQuery || `${tab.title} ${tab.url}`.toLowerCase().includes(normalizedTabQuery),
+  );
+
+  function reopenTab(tab: ClosedTab) {
+    const reopened = newTab(tab.url);
+    reopened.title = tab.title;
+    setTabs((items) => [...items, reopened]);
+    setActiveId(reopened.id);
+    setRecentlyClosed((items) => items.filter((item) => item !== tab));
+    setTabSearchOpen(false);
+  }
 
   if (loading) return <p className="px-4 py-16 text-center text-sm text-muted-foreground">Loading…</p>;
   if (!canProxy) {
@@ -209,8 +262,21 @@ function ProxyPage() {
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
       <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-xl"}`}>
         {/* Tab strip */}
-        <div className="no-scrollbar flex h-11 items-end overflow-x-auto border-b border-border bg-background/80 px-2 backdrop-blur">
-          {tabs.map((t) => {
+        <div ref={tabSearchRef} className="relative flex h-11 items-end border-b border-border bg-background/80 px-2 backdrop-blur">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Search tabs"
+            aria-expanded={tabSearchOpen}
+            title="Search tabs (Ctrl+Shift+A)"
+            onClick={() => setTabSearchOpen((open) => !open)}
+            className="mb-0.5 mr-1 size-7 shrink-0 rounded-full bg-secondary text-foreground"
+          >
+            <ChevronDown className="size-3.5" />
+          </Button>
+          <div className="no-scrollbar flex min-w-0 flex-1 items-end overflow-x-auto">
+            {tabs.map((t) => {
             const on = t.id === activeId;
             return (
               <div
@@ -242,10 +308,58 @@ function ProxyPage() {
                 </button>
               </div>
             );
-          })}
-          <button type="button" aria-label="New tab" title="New tab (Ctrl+Alt+T)" onClick={() => addTab()} className="mb-0.5 ml-1 grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground">
-            <Plus className="size-3.5" />
-          </button>
+            })}
+            <button type="button" aria-label="New tab" title="New tab (Ctrl+Alt+T)" onClick={() => addTab()} className="mb-0.5 ml-1 grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground">
+              <Plus className="size-3.5" />
+            </button>
+          </div>
+          {tabSearchOpen && (
+            <div className="absolute left-2 top-[calc(100%+0.35rem)] z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-2xl">
+              <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+                <Search className="size-4 shrink-0 text-muted-foreground" />
+                <input
+                  autoFocus
+                  value={tabQuery}
+                  onChange={(event) => setTabQuery(event.target.value)}
+                  placeholder="Search tabs"
+                  className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+                <span className="text-[10px] text-muted-foreground">Ctrl Shift A</span>
+              </div>
+              <div className="max-h-[min(28rem,60vh)] overflow-y-auto p-2">
+                <p className="px-2 pb-1 pt-1 text-[10px] font-semibold uppercase text-muted-foreground">Open tabs</p>
+                {matchingTabs.map((tab) => (
+                  <div key={tab.id} className={`group/search flex items-center rounded-md ${tab.id === activeId ? "bg-secondary" : "hover:bg-secondary/70"}`}>
+                    <button type="button" onClick={() => { setActiveId(tab.id); setTabSearchOpen(false); }} className="flex min-w-0 flex-1 items-center gap-3 px-2 py-2 text-left">
+                      {tab.url ? <img src={faviconOf(tab.url)} alt="" className="size-5 shrink-0 rounded-sm" /> : <Globe className="size-5 shrink-0 text-primary" />}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-medium">{tab.title}</span>
+                        <span className="block truncate text-[10px] text-muted-foreground">{tab.url || "New tab"}</span>
+                      </span>
+                    </button>
+                    <button type="button" aria-label={`Close ${tab.title}`} onClick={() => closeTab(tab.id)} className="mr-2 grid size-6 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ))}
+                {matchingClosed.length > 0 && (
+                  <>
+                    <p className="px-2 pb-1 pt-3 text-[10px] font-semibold uppercase text-muted-foreground">Recently closed</p>
+                    {matchingClosed.map((tab, index) => (
+                      <button key={`${tab.url}-${index}`} type="button" onClick={() => reopenTab(tab)} className="flex w-full min-w-0 items-center gap-3 rounded-md px-2 py-2 text-left hover:bg-secondary/70">
+                        <img src={faviconOf(tab.url)} alt="" className="size-5 shrink-0 rounded-sm" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-xs font-medium">{tab.title}</span>
+                          <span className="block truncate text-[10px] text-muted-foreground">{tab.url}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </>
+                )}
+                {!matchingTabs.length && !matchingClosed.length && <p className="px-2 py-6 text-center text-xs text-muted-foreground">No matching tabs</p>}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Toolbar + omnibox */}
@@ -268,6 +382,7 @@ function ProxyPage() {
               autoCapitalize="none"
               spellCheck={false}
             />
+            {bookmarkletMessage && <span className="absolute left-4 top-full z-40 mt-2 rounded-md border border-border bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-lg">{bookmarkletMessage}</span>}
             <button type="button" aria-label={pinned ? "Remove bookmark" : "Bookmark this tab"} disabled={!active.url} onClick={togglePin} className="absolute right-2 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:text-foreground disabled:opacity-40">
               <Star className={`size-3.5 ${pinned ? "fill-current text-[var(--neon-pink)]" : ""}`} />
             </button>
