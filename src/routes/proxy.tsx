@@ -119,7 +119,7 @@ function ProxyPage() {
       const frame = frames.current.get(id);
       try {
         if (!frame?.contentWindow) throw new Error("No active page");
-        frame.contentWindow.eval(code);
+        (frame.contentWindow as unknown as { eval: (source: string) => unknown }).eval(code);
         setBookmarkletMessage("Bookmarklet ran");
       } catch {
         setBookmarkletMessage("This page blocked the bookmarklet");
