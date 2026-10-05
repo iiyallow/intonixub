@@ -221,6 +221,12 @@ function ProxyPage() {
                 onAuxClick={(e) => { if (e.button === 1) closeTab(t.id); }}
                 className={`group relative flex h-9 w-48 min-w-32 shrink cursor-pointer items-center gap-2 rounded-t-lg px-3 text-xs transition-colors duration-200 ${on ? "z-10 bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"}`}
               >
+                {on && (
+                  <>
+                    <span aria-hidden className="pointer-events-none absolute -bottom-px -left-2 size-2 overflow-hidden before:absolute before:-left-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[4px_4px_0_0_var(--secondary)]" />
+                    <span aria-hidden className="pointer-events-none absolute -bottom-px -right-2 size-2 overflow-hidden before:absolute before:-right-2 before:-top-2 before:size-4 before:rounded-full before:shadow-[-4px_4px_0_0_var(--secondary)]" />
+                  </>
+                )}
                 {t.loading ? (
                   <span className="size-3.5 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 ) : t.url ? (
