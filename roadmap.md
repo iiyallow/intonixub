@@ -10,6 +10,6 @@
 - [x] Add more themes
 - [x] Auth page, account page, admin dashboard (edit tier/status)
 - [x] Expanded legal: prohibited uses, no refunds, termination at any time
-- [ ] Proxy engine limitation: your worker returns pages without rewriting styles/scripts, so sites load unstyled
+- [x] Proxy engine limitation: Ultraviolet service worker now rewrites styles/scripts through the Lambda Bare server
 - [x] Electric Night redesign, interactive backgrounds, compact bookmark rail, and console quality-of-life upgrades
 - [x] Chrome-style tab search, recently closed tabs, and omnibox bookmarklet execution
