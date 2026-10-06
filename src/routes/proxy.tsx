@@ -290,7 +290,7 @@ function ProxyPage() {
           >
             <ChevronDown className="size-3.5" />
           </Button>
-          <div className="no-scrollbar flex min-w-0 flex-1 items-end overflow-x-auto">
+          <div className="no-scrollbar flex min-w-0 flex-1 items-end overflow-x-auto pl-2">
             {tabs.map((t) => {
             const on = t.id === activeId;
             return (
@@ -329,7 +329,7 @@ function ProxyPage() {
             </button>
           </div>
           {tabSearchOpen && (
-            <div className="absolute left-2 top-[calc(100%+0.35rem)] z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-2xl">
+            <div className="absolute left-1/2 top-[calc(100%+0.35rem)] z-50 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-2xl">
               <div className="flex items-center gap-2 border-b border-border px-3 py-2">
                 <Search className="size-4 shrink-0 text-muted-foreground" />
                 <input
