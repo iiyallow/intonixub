@@ -18,6 +18,7 @@ import {
   Search,
   Star,
   X,
+  SquareTerminal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -228,6 +229,20 @@ function ProxyPage() {
     () => [...SHORTCUTS.map((s) => ({ label: s.name, url: s.url })), ...pins.filter((p) => !SHORTCUTS.some((s) => s.url === p)).map((url) => ({ label: hostOf(url), url }))],
     [pins],
   );
+  function inspect() {
+    const win = frames.current.get(activeId)?.contentWindow as (Window & { eruda?: { init: () => void; show: () => void } }) | null | undefined;
+    try {
+      if (!win) throw new Error("No page");
+      if (win.eruda) { win.eruda.show(); return; }
+      const script = win.document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/eruda@3";
+      script.onload = () => { win.eruda?.init(); win.eruda?.show(); };
+      win.document.body.appendChild(script);
+    } catch {
+      setBookmarkletMessage("This page blocked inspect element");
+      window.setTimeout(() => setBookmarkletMessage(""), 2200);
+    }
+  }
   const normalizedTabQuery = tabQuery.trim().toLowerCase();
   const matchingTabs = tabs.filter((tab) =>
     !normalizedTabQuery || `${tab.title} ${tab.url}`.toLowerCase().includes(normalizedTabQuery),
@@ -388,6 +403,7 @@ function ProxyPage() {
             </button>
           </form>
           <Tool label="Copy address" disabled={!active.url} onClick={() => { void navigator.clipboard?.writeText(active.url); setCopied(true); window.setTimeout(() => setCopied(false), 1200); }}>{copied ? <Check className="text-[var(--neon-cyan)]" /> : <Copy />}</Tool>
+          <Tool label="Inspect element" disabled={!active.url} onClick={inspect}><SquareTerminal /></Tool>
           <Tool label="Open in about:blank" disabled={!active.url} onClick={openStealthTab}><ExternalLink /></Tool>
           <Tool label="Panic (go to Google Classroom)" onClick={() => window.location.replace("https://classroom.google.com")}><EyeOff /></Tool>
           <Tool label={full ? "Exit fullscreen" : "Fullscreen"} onClick={() => setFull((v) => !v)}>{full ? <Minimize2 /> : <Maximize2 />}</Tool>
@@ -404,7 +420,7 @@ function ProxyPage() {
         </div>
 
         {/* Tab contents — inactive tabs stay alive, just hidden */}
-        <div className="relative min-h-0 flex-1 bg-background">
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-xl bg-background">
           {tabs.map((t) => {
             const src = srcOf(t);
             const on = t.id === activeId;
