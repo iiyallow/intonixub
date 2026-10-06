@@ -260,9 +260,9 @@ function ProxyPage() {
 
   return (
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
-      <section className={`flex flex-col overflow-hidden border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-xl"}`}>
+      <section className={`flex flex-col border border-border bg-card shadow-2xl ${full ? "h-full" : "h-[82vh] rounded-xl"}`}>
         {/* Tab strip */}
-        <div ref={tabSearchRef} className="relative flex h-11 items-end border-b border-border bg-background/80 px-2 backdrop-blur">
+        <div ref={tabSearchRef} className="relative z-30 flex h-11 shrink-0 items-end rounded-t-xl border-b border-border bg-background px-2">
           <Button
             type="button"
             variant="ghost"
