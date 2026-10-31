@@ -2,6 +2,7 @@
 type UVConfig = { prefix: string; encodeUrl: (url: string) => string };
 
 let ready: Promise<UVConfig | null> | null = null;
+let registration: ServiceWorkerRegistration | null = null;
 
 function loadScript(src: string) {
   return new Promise<void>((resolve, reject) => {
@@ -22,7 +23,7 @@ export function initUV(): Promise<UVConfig | null> {
       await loadScript("/uv/uv.bundle.js");
       await loadScript("/uv/uv.config.js");
       const config = (window as unknown as { __uv$config: UVConfig }).__uv$config;
-      const registration = await navigator.serviceWorker.register("/uv/sw.js", { scope: config.prefix });
+      registration = await navigator.serviceWorker.register("/uv/sw.js", { scope: config.prefix });
       // navigator.serviceWorker.ready can hang when the registration scope
       // (/uv/service/) doesn't cover the page URL — wait for activation instead.
       const worker = registration.active ?? registration.waiting ?? registration.installing;
@@ -53,4 +54,17 @@ export function uvUrl(config: UVConfig, url: string) {
     (window as unknown as { Ultraviolet?: { codec: { xor: { encode: (u: string) => string } } } }).Ultraviolet?.codec.xor.encode ??
     config.encodeUrl;
   return config.prefix + encode(url);
+}
+
+/**
+ * Point the running service worker at a different upstream engine, live.
+ * The worker rebuilds its client from the new address on receipt.
+ */
+export function setUVBare(url: string) {
+  const worker = registration?.active ?? registration?.waiting ?? registration?.installing;
+  try {
+    worker?.postMessage({ bare: url.replace(/\/+$/, "") });
+  } catch {
+    /* worker not ready to receive messages */
+  }
 }
