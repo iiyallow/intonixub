@@ -9,6 +9,17 @@ importScripts('uv.bundle.js');
 importScripts('uv.config.js');
 importScripts(__uv$config.sw || 'uv.sw.js');
 
-const sw = new UVServiceWorker();
+let sw = new UVServiceWorker();
 
 self.addEventListener('fetch', (event) => event.respondWith(sw.fetch(event)));
+
+/*
+ * The page can point this worker at a different upstream engine without a
+ * reload. A fresh UVServiceWorker picks up the new __uv$config.bare address.
+ */
+self.addEventListener('message', (event) => {
+    const bare = event.data && event.data.bare;
+    if (typeof bare !== 'string' || !bare || bare === self.__uv$config.bare) return;
+    self.__uv$config.bare = bare;
+    sw = new UVServiceWorker();
+});
