@@ -13,3 +13,5 @@
 - [x] Proxy engine limitation: Ultraviolet service worker now rewrites styles/scripts through the Lambda Bare server
 - [x] Electric Night redesign, interactive backgrounds, compact bookmark rail, and console quality-of-life upgrades
 - [x] Chrome-style tab search, recently closed tabs, and omnibox bookmarklet execution
+- [x] Automatic engine failover: ordered engine list, live health probes, hands-free switching
+- [x] Custom new-tab shortcuts that can be added and removed on this device

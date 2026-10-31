@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, RefreshCw, Save, ShieldCheck, ShieldOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type Profile, type Status, type Tier } from "@/lib/auth";
-import { DEFAULT_PROXY_BASE, type ProxyMode } from "@/lib/proxy";
+import { type ProxyMode } from "@/lib/proxy";
+import { parseEngines } from "@/lib/engines";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -29,7 +30,7 @@ function AdminPage() {
   const [busy, setBusy] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [proxyBase, setProxyBase] = useState("");
+  const [enginesText, setEnginesText] = useState("");
   const [proxyMode, setProxyMode] = useState<ProxyMode>("query");
 
   const load = useCallback(async () => {
@@ -42,7 +43,7 @@ function AdminPage() {
     setRows((profiles as Profile[] | null) ?? []);
     setAdmins((roles ?? []).map((r) => r.user_id as string));
     const map = new Map((settings ?? []).map((s) => [s.key as string, s.value as string]));
-    setProxyBase(map.get("proxy_base_url") || DEFAULT_PROXY_BASE);
+    setEnginesText(parseEngines(map.get("proxy_engines") || map.get("proxy_base_url") || "").join("\n"));
     setProxyMode(((map.get("proxy_mode") as ProxyMode) || "query") as ProxyMode);
     setBusy(false);
   }, []);
@@ -93,14 +94,16 @@ function AdminPage() {
   }
 
   async function saveProxy() {
+    const list = parseEngines(enginesText);
     const { error } = await supabase.from("app_settings").upsert(
       [
-        { key: "proxy_base_url", value: proxyBase.trim() },
+        { key: "proxy_engines", value: list.join("\n") },
+        { key: "proxy_base_url", value: list[0] ?? "" },
         { key: "proxy_mode", value: proxyMode },
       ],
       { onConflict: "key" },
     );
-    setMessage(error ? error.message : "Proxy engine updated");
+    setMessage(error ? error.message : `Saved ${list.length} engine${list.length === 1 ? "" : "s"}`);
   }
 
   const filtered = rows.filter((r) =>
@@ -125,13 +128,18 @@ function AdminPage() {
 
       <section className="mt-6 rounded-2xl glass p-4">
         <p className="font-display font-semibold">Proxy engine</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-          <input
-            value={proxyBase}
-            onChange={(e) => setProxyBase(e.target.value)}
-            className="input w-full"
-            placeholder="https://your-proxy.workers.dev"
-          />
+        <textarea
+          value={enginesText}
+          onChange={(e) => setEnginesText(e.target.value)}
+          className="input min-h-24 w-full font-mono text-xs"
+          placeholder={"https://primary.example.on.aws\nhttps://backup.example.on.aws"}
+          aria-label="Engine addresses"
+        />
+        <p className="mt-2 text-xs text-muted-foreground">
+          One address per line, most preferred first. The console checks each address and moves to
+          the next one automatically when the active engine stops answering.
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
           <select
             value={proxyMode}
             onChange={(e) => setProxyMode(e.target.value as ProxyMode)}
