@@ -19,12 +19,26 @@ import {
   Star,
   X,
   SquareTerminal,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { DEFAULT_PROXY_BASE, QUICK_LAUNCH, buildProxyUrl, faviconOf, normalizeTarget, type ProxyMode } from "@/lib/proxy";
-import { initUV, uvUrl } from "@/lib/uv";
+import { initUV, setUVBare, uvUrl } from "@/lib/uv";
+import {
+  DEFAULT_ENGINES,
+  engineLabel,
+  loadShortcuts,
+  nextEngine,
+  parseEngines,
+  pickEngine,
+  probeEngine,
+  readActiveEngine,
+  saveShortcuts,
+  writeActiveEngine,
+  type Shortcut,
+} from "@/lib/engines";
 
 export const Route = createFileRoute("/proxy")({
   head: () => ({
@@ -75,32 +89,89 @@ function ProxyPage() {
   const [activeId, setActiveId] = useState(tabs[0]!.id);
   const [input, setInput] = useState("");
   const [pins, setPins] = useState<string[]>([]);
+  const [custom, setCustom] = useState<Shortcut[]>([]);
   const [full, setFull] = useState(false);
   const [copied, setCopied] = useState(false);
   const [tabSearchOpen, setTabSearchOpen] = useState(false);
   const [tabQuery, setTabQuery] = useState("");
   const [recentlyClosed, setRecentlyClosed] = useState<ClosedTab[]>([]);
   const [bookmarkletMessage, setBookmarkletMessage] = useState("");
+  const [engines, setEngines] = useState<string[]>(DEFAULT_ENGINES);
+  const [engine, setEngine] = useState<string>(DEFAULT_PROXY_BASE);
+  const [engineBusy, setEngineBusy] = useState(true);
+  const [engineNotice, setEngineNotice] = useState("");
   const [uv, setUv] = useState<Awaited<ReturnType<typeof initUV>>>(null);
   const frames = useRef(new Map<number, HTMLIFrameElement>());
   const inputRef = useRef<HTMLInputElement>(null);
   const tabSearchRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef(tabs);
+  const enginesRef = useRef<string[]>(DEFAULT_ENGINES);
+  const engineRef = useRef<string>(DEFAULT_PROXY_BASE);
+  const switchedAt = useRef(0);
   const active = (tabs.find((t) => t.id === activeId) ?? tabs[0])!;
+
+  const flashEngine = useCallback((msg: string) => {
+    setEngineNotice(msg);
+    window.setTimeout(() => setEngineNotice(""), 3400);
+  }, []);
+
+  const applyEngine = useCallback((url: string) => {
+    setEngine(url);
+    setBase(url);
+    writeActiveEngine(url);
+    setUVBare(url);
+    setEngineBusy(false);
+  }, []);
+
+  const switchEngine = useCallback(
+    async (reason: string) => {
+      const now = Date.now();
+      if (now - switchedAt.current < 8000) return;
+      switchedAt.current = now;
+      const candidate = await nextEngine(enginesRef.current, engineRef.current);
+      if (!candidate) {
+        flashEngine("No other engine is reachable right now");
+        return;
+      }
+      applyEngine(candidate);
+      flashEngine(`${reason} — now on ${engineLabel(candidate)}`);
+      setTabs((ts) => ts.map((t) => (t.url ? { ...t, loading: true, nonce: t.nonce + 1 } : t)));
+    },
+    [applyEngine, flashEngine],
+  );
 
   useEffect(() => {
     setPins(loadPins());
+    setCustom(loadShortcuts());
     void initUV().then(setUv);
     void (async () => {
       const { data } = await supabase.from("app_settings").select("key, value");
       const map = new Map((data ?? []).map((s) => [s.key as string, s.value as string]));
-      setBase(map.get("proxy_base_url") || DEFAULT_PROXY_BASE);
+      const list = parseEngines(map.get("proxy_engines") || map.get("proxy_base_url") || "");
+      setEngines(list);
+      enginesRef.current = list;
       setMode((map.get("proxy_mode") as ProxyMode) || "query");
+      const chosen = await pickEngine(list, readActiveEngine());
+      engineRef.current = chosen;
+      applyEngine(chosen);
     })();
-  }, []);
+  }, [applyEngine]);
 
   useEffect(() => { setInput(active?.url ?? ""); }, [activeId, active?.url]);
   useEffect(() => { tabsRef.current = tabs; }, [tabs]);
+  useEffect(() => { enginesRef.current = engines; }, [engines]);
+  useEffect(() => { engineRef.current = engine; }, [engine]);
+
+  /* Keep checking the live engine so a dead address is caught without a click. */
+  useEffect(() => {
+    if (engineBusy) return;
+    const id = window.setInterval(() => {
+      void probeEngine(engineRef.current).then((alive) => {
+        if (!alive) void switchEngine("Engine stopped answering");
+      });
+    }, 45000);
+    return () => window.clearInterval(id);
+  }, [engineBusy, switchEngine]);
 
   useEffect(() => {
     if (!tabSearchOpen) return;
@@ -191,6 +262,11 @@ function ProxyPage() {
         const real = cfg.decodeUrl(path.slice(cfg.prefix.length) + (frame?.contentWindow?.location.search ?? ""));
         if (real.startsWith("http")) p.url = real;
       }
+      // Ultraviolet renders its own failure page when the engine can't answer.
+      const body = doc?.body?.innerText?.slice(0, 3000) ?? "";
+      if (/could not be reached|Error communicating with the Bare server|Error processing your request/i.test(body)) {
+        void switchEngine("Engine failed to load the page");
+      }
     } catch {
       // Cross-origin frame (direct mode): keep the known address.
     }
@@ -225,10 +301,38 @@ function ProxyPage() {
     w.document.close();
   }
 
-  const bookmarks = useMemo(
-    () => [...SHORTCUTS.map((s) => ({ label: s.name, url: s.url })), ...pins.filter((p) => !SHORTCUTS.some((s) => s.url === p)).map((url) => ({ label: hostOf(url), url }))],
-    [pins],
-  );
+  const bookmarks = useMemo(() => {
+    const seen = new Set<string>();
+    const list: { label: string; url: string }[] = [];
+    const push = (label: string, url: string) => {
+      if (seen.has(url)) return;
+      seen.add(url);
+      list.push({ label, url });
+    };
+    SHORTCUTS.forEach((s) => push(s.name, s.url));
+    custom.forEach((c) => push(c.name, c.url));
+    pins.forEach((p) => push(hostOf(p), p));
+    return list;
+  }, [pins, custom]);
+
+  function addShortcut(name: string, raw: string) {
+    const url = normalizeTarget(raw);
+    if (!url) return;
+    setCustom((prev) => {
+      const next = [...prev.filter((s) => s.url !== url), { name, url }];
+      saveShortcuts(next);
+      return next;
+    });
+  }
+
+  function removeShortcut(url: string) {
+    setCustom((prev) => {
+      const next = prev.filter((s) => s.url !== url);
+      saveShortcuts(next);
+      return next;
+    });
+  }
+
   function inspect() {
     const win = frames.current.get(activeId)?.contentWindow as (Window & { eruda?: { init: () => void; show: () => void } }) | null | undefined;
     try {
@@ -272,6 +376,7 @@ function ProxyPage() {
   }
 
   const secure = active.url.startsWith("https://");
+  const engineIndex = Math.max(1, engines.indexOf(engine) + 1);
 
   return (
     <div className={full ? "fixed inset-0 z-50 bg-background" : "relative z-10 mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-6"}>
@@ -417,10 +522,25 @@ function ProxyPage() {
               {b.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => void switchEngine("You switched engines")}
+            title={`${engine}\nClick to try the next engine`}
+            className="ml-auto flex h-6 shrink-0 items-center gap-1.5 rounded-full border border-border/70 px-2.5 text-[11px] text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground"
+          >
+            <span className={`size-1.5 rounded-full ${engineBusy ? "bg-muted-foreground" : "bg-[var(--neon-cyan)]"}`} />
+            Engine {engineIndex}/{engines.length}
+            <Zap className="size-3" />
+          </button>
         </div>
 
         {/* Tab contents — inactive tabs stay alive, just hidden */}
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-xl bg-background">
+          {engineNotice && (
+            <span className="pointer-events-none absolute bottom-3 left-3 z-40 rounded-md border border-border bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-lg">
+              {engineNotice}
+            </span>
+          )}
           {tabs.map((t) => {
             const src = srcOf(t);
             const on = t.id === activeId;
@@ -438,7 +558,7 @@ function ProxyPage() {
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <NewTabPage onGo={(u) => navigate(u, t.id)} />
+                  <NewTabPage onGo={(u) => navigate(u, t.id)} custom={custom} onAdd={addShortcut} onRemove={removeShortcut} />
                 )}
               </div>
             );
@@ -449,8 +569,31 @@ function ProxyPage() {
   );
 }
 
-function NewTabPage({ onGo }: { onGo: (url: string) => void }) {
+function NewTabPage({
+  onGo,
+  custom,
+  onAdd,
+  onRemove,
+}: {
+  onGo: (url: string) => void;
+  custom: Shortcut[];
+  onAdd: (name: string, url: string) => void;
+  onRemove: (url: string) => void;
+}) {
   const [q, setQ] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [url, setUrl] = useState("");
+
+  function submitShortcut(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || !url.trim()) return;
+    onAdd(name.trim(), url.trim());
+    setName("");
+    setUrl("");
+    setAdding(false);
+  }
+
   return (
     <div className="relative flex h-full items-center justify-center overflow-y-auto px-6 py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40rem_20rem_at_50%_0%,color-mix(in_oklab,var(--primary)_14%,transparent),transparent)]" aria-hidden />
@@ -462,6 +605,25 @@ function NewTabPage({ onGo }: { onGo: (url: string) => void }) {
           <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus placeholder="Search DuckDuckGo or type a URL" className="h-12 w-full rounded-full border border-border bg-secondary/80 pl-11 pr-4 text-sm outline-none backdrop-blur transition-shadow focus:border-primary focus:shadow-[0_0_0_1px_var(--primary),0_0_24px_-6px_var(--primary)]" spellCheck={false} autoCapitalize="none" />
         </form>
         <div className="mt-8 grid grid-cols-4 gap-3 sm:gap-4">
+          {custom.map((s) => (
+            <div key={s.url} className="group relative">
+              <button type="button" onClick={() => onGo(s.url)} className="flex w-full flex-col items-center gap-2 rounded-xl p-2 transition-colors hover:bg-secondary/70">
+                <span className="grid size-12 place-items-center rounded-full border border-border bg-secondary transition-all duration-200 group-hover:scale-105 group-hover:border-primary/50 group-hover:shadow-[0_0_18px_-6px_var(--primary)]">
+                  <img src={faviconOf(s.url)} alt="" className="size-6" />
+                </span>
+                <span className="w-full truncate text-xs text-muted-foreground group-hover:text-foreground">{s.name}</span>
+              </button>
+              <button
+                type="button"
+                aria-label={`Remove ${s.name}`}
+                title={`Remove ${s.name}`}
+                onClick={() => onRemove(s.url)}
+                className="absolute -right-1 -top-1 hidden size-5 place-items-center rounded-full border border-border bg-popover text-muted-foreground shadow hover:text-destructive group-hover:grid"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          ))}
           {SHORTCUTS.map((s) => (
             <button key={s.url} type="button" onClick={() => onGo(s.url)} className="group flex flex-col items-center gap-2 rounded-xl p-2 transition-colors hover:bg-secondary/70">
               <span className="grid size-12 place-items-center rounded-full border border-border bg-secondary transition-all duration-200 group-hover:scale-105 group-hover:border-primary/50 group-hover:shadow-[0_0_18px_-6px_var(--primary)]">
@@ -470,7 +632,36 @@ function NewTabPage({ onGo }: { onGo: (url: string) => void }) {
               <span className="w-full truncate text-xs text-muted-foreground group-hover:text-foreground">{s.name}</span>
             </button>
           ))}
+          <button type="button" onClick={() => setAdding((v) => !v)} className="group flex flex-col items-center gap-2 rounded-xl p-2 transition-colors hover:bg-secondary/70">
+            <span className="grid size-12 place-items-center rounded-full border border-dashed border-border bg-secondary/40 text-muted-foreground transition-all duration-200 group-hover:scale-105 group-hover:border-primary/50 group-hover:text-primary">
+              <Plus className="size-5" />
+            </span>
+            <span className="w-full truncate text-xs text-muted-foreground group-hover:text-foreground">Add shortcut</span>
+          </button>
         </div>
+        {adding && (
+          <form onSubmit={submitShortcut} className="mt-5 grid gap-2 text-left sm:grid-cols-[1fr_1.4fr_auto]">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              aria-label="Shortcut name"
+              className="h-9 rounded-lg border border-border bg-secondary/70 px-3 text-sm outline-none focus:border-primary"
+            />
+            <input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              aria-label="Shortcut address"
+              className="h-9 rounded-lg border border-border bg-secondary/70 px-3 text-sm outline-none focus:border-primary"
+              autoCapitalize="none"
+              spellCheck={false}
+            />
+            <button type="submit" className="h-9 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">
+              Save
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
