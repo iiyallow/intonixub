@@ -26,7 +26,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { DEFAULT_PROXY_BASE, QUICK_LAUNCH, buildProxyUrl, faviconOf, normalizeTarget, type ProxyMode } from "@/lib/proxy";
 import { initUV, setUVBare, setUVWisp, uvUrl } from "@/lib/uv";
-import { WISP_URL } from "@/lib/engines";
+import { WISP_URL, probeWisp } from "@/lib/engines";
+import { useIntonix } from "@/lib/intonix-store";
 import {
   DEFAULT_ENGINES,
   engineLabel,
@@ -117,11 +118,34 @@ function ProxyPage() {
   }, []);
 
   const [turbo, setTurbo] = useState(false);
+  const [health, setHealth] = useState<"checking" | "up" | "down">("checking");
+  const { settings: prefs } = useIntonix();
+  const wantWisp = !!session && !!WISP_URL && prefs.transport === "wisp";
   useEffect(() => {
     if (!uv) return;
-    const on = !!session && !!WISP_URL;
-    void setUVWisp(on ? WISP_URL : "").then(() => setTurbo(on));
-  }, [uv, session]);
+    let cancelled = false;
+    void (async () => {
+      const ok = wantWisp ? await probeWisp() : false;
+      if (cancelled) return;
+      if (wantWisp && !ok) flashEngine("Wisp is offline — using Ultraviolet");
+      await setUVWisp(wantWisp && ok ? WISP_URL : "");
+      setTurbo(wantWisp && ok);
+    })();
+    return () => { cancelled = true; };
+  }, [uv, wantWisp, flashEngine]);
+
+  useEffect(() => {
+    if (engineBusy) return;
+    let stop = false;
+    const check = async () => {
+      const ok = turbo ? await probeWisp() : await probeEngine(engine);
+      if (!stop) setHealth(ok ? "up" : "down");
+    };
+    setHealth("checking");
+    void check();
+    const id = window.setInterval(check, 30000);
+    return () => { stop = true; window.clearInterval(id); };
+  }, [turbo, engine, engineBusy]);
 
   const applyEngine = useCallback((url: string) => {
     setEngine(url);
@@ -536,11 +560,12 @@ function ProxyPage() {
           <button
             type="button"
             onClick={() => void switchEngine("You switched engines")}
-            title={`${engine}\nClick to try the next engine`}
+            title={`${turbo ? WISP_URL : engine}\n${health === "up" ? "Working" : health === "down" ? "Not responding" : "Checking…"}\nClick to try the next engine`}
             className="ml-auto flex h-6 shrink-0 items-center gap-1.5 rounded-full border border-border/70 px-2.5 text-[11px] text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground"
           >
-            <span className={`size-1.5 rounded-full ${engineBusy ? "bg-muted-foreground" : "bg-[var(--neon-cyan)]"}`} />
-            {turbo ? "Wisp Turbo" : `Engine ${engineIndex}/${engines.length}`}
+            <span className={`size-1.5 rounded-full ${engineBusy || health === "checking" ? "animate-pulse bg-muted-foreground" : health === "up" ? "bg-[var(--neon-cyan)]" : "bg-destructive"}`} />
+            {turbo ? "Wisp Turbo" : `UV · Engine ${engineIndex}/${engines.length}`}
+            <span className={health === "down" ? "text-destructive" : ""}>{health === "up" ? "· Working" : health === "down" ? "· Down" : "· Checking"}</span>
             <Zap className="size-3" />
           </button>
         </div>

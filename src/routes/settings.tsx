@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Database, Keyboard, Palette, VenetianMask } from "lucide-react";
+import { Database, Keyboard, Lock, Palette, VenetianMask, Zap } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { useRef, useState } from "react";
 import {
   CLOAK_PRESETS,
@@ -68,6 +69,7 @@ function SettingsPage() {
     favorites,
     recent,
   } = useIntonix();
+  const { session } = useAuth();
   const [listening, setListening] = useState(false);
   const [notice, setNotice] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -87,6 +89,32 @@ function SettingsPage() {
       {notice && (
         <p className="mt-4 rounded-xl glass px-4 py-2 text-sm text-primary">{notice}</p>
       )}
+
+      {/* Proxy engine */}
+      <Card icon={<Zap className="size-4 text-primary" />} title="Proxy engine">
+        {session ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {([
+              { id: "wisp", label: "Wisp Turbo", desc: "Fast tunnel, best for video and live sites." },
+              { id: "uv", label: "Ultraviolet (standard)", desc: "Reliable fallback through the standard engine." },
+            ] as const).map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                onClick={() => { setSettings({ transport: o.id }); flash(`Now using ${o.label}. Reopen the console to apply.`); }}
+                className={`rounded-xl border p-3 text-left transition-colors ${settings.transport === o.id ? "border-primary bg-primary/10" : "border-border hover:bg-secondary/60"}`}
+              >
+                <p className="text-sm font-semibold">{o.label}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{o.desc}</p>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm text-muted-foreground">
+            <Lock className="size-4" /> Engine switching is locked to signed-in accounts. Guests use Ultraviolet.
+          </p>
+        )}
+      </Card>
 
       {/* Cloaking */}
       <Card icon={<VenetianMask className="size-4 text-primary" />} title="Tab cloaking & stealth">

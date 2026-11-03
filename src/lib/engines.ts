@@ -119,3 +119,19 @@ export function saveShortcuts(list: Shortcut[]) {
     /* storage unavailable */
   }
 }
+
+/** Check the Wisp relay's /health endpoint. */
+export async function probeWisp(url = WISP_URL, timeoutMs = 4000): Promise<boolean> {
+  if (!url) return false;
+  const health = url.replace(/^ws/, "http").replace(/\/wisp\/?$/, "") + "/health";
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(health, { signal: ctrl.signal, cache: "no-store" });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(t);
+  }
+}

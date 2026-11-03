@@ -62,6 +62,7 @@ export type Settings = {
   cloakFavicon: string;
   panicKey: string;
   panicUrl: string;
+  transport: "wisp" | "uv";
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -73,6 +74,7 @@ export const DEFAULT_SETTINGS: Settings = {
   cloakFavicon: "",
   panicKey: "Escape",
   panicUrl: "https://classroom.google.com/",
+  transport: "wisp",
 };
 
 const KEYS = {
