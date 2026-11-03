@@ -2,6 +2,10 @@
 type UVConfig = { prefix: string; encodeUrl: (url: string) => string };
 
 let ready: Promise<UVConfig | null> | null = null;
+type MuxConn = { setTransport: (path: string, opts: unknown[]) => Promise<void> };
+let connection: MuxConn | null = null;
+let bareAddr = "";
+let wispAddr = "";
 let registration: ServiceWorkerRegistration | null = null;
 
 function loadScript(src: string) {
@@ -22,6 +26,9 @@ export function initUV(): Promise<UVConfig | null> {
     try {
       await loadScript("/uv/uv.bundle.js");
       await loadScript("/uv/uv.config.js");
+      await loadScript("/baremux/index.js");
+      const mux = (window as unknown as { BareMux: { BareMuxConnection: new (w: string) => MuxConn } }).BareMux;
+      connection = new mux.BareMuxConnection("/baremux/worker.js");
       const config = (window as unknown as { __uv$config: UVConfig }).__uv$config;
       registration = await navigator.serviceWorker.register("/uv/sw.js", { scope: config.prefix });
       // navigator.serviceWorker.ready can hang when the registration scope
@@ -56,15 +63,34 @@ export function uvUrl(config: UVConfig, url: string) {
   return config.prefix + encode(url);
 }
 
-/**
- * Point the running service worker at a different upstream engine, live.
- * The worker rebuilds its client from the new address on receipt.
- */
-export function setUVBare(url: string) {
-  const worker = registration?.active ?? registration?.waiting ?? registration?.installing;
+/** Current transport: "wisp" (fast tunnel) or "bare" (Lambda). */
+export let activeTransport: "wisp" | "bare" = "bare";
+
+async function applyTransport() {
+  if (!connection) return;
   try {
-    worker?.postMessage({ bare: url.replace(/\/+$/, "") });
-  } catch {
-    /* worker not ready to receive messages */
+    if (wispAddr) {
+      await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispAddr }]);
+      activeTransport = "wisp";
+      return;
+    }
+  } catch (error) {
+    console.warn("Wisp transport failed, using Bare", error);
   }
+  if (bareAddr) {
+    await connection.setTransport("/baremod/index.mjs", [bareAddr + "/"]);
+    activeTransport = "bare";
+  }
+}
+
+/** Point the proxy at a Bare engine (used for guests and as fallback). */
+export function setUVBare(url: string) {
+  bareAddr = url.replace(/\/+$/, "");
+  return applyTransport();
+}
+
+/** Enable (wss:// address) or disable ("") the Wisp tunnel. */
+export function setUVWisp(url: string) {
+  wispAddr = url;
+  return applyTransport();
 }

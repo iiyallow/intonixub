@@ -1,25 +1,10 @@
 /*global UVServiceWorker,__uv$config*/
-/*
- * Stock service worker script.
- * Users can provide their own sw.js if they need to extend the functionality of the service worker.
- * Ideally, this will be registered under the scope in uv.config.js so it will not need to be modified.
- * However, if a user changes the location of uv.bundle.js/uv.config.js or sw.js is not relative to them, they will need to modify this script locally.
- */
 importScripts('uv.bundle.js');
 importScripts('uv.config.js');
 importScripts(__uv$config.sw || 'uv.sw.js');
-
-let sw = new UVServiceWorker();
-
-self.addEventListener('fetch', (event) => event.respondWith(sw.fetch(event)));
-
-/*
- * The page can point this worker at a different upstream engine without a
- * reload. A fresh UVServiceWorker picks up the new __uv$config.bare address.
- */
-self.addEventListener('message', (event) => {
-    const bare = event.data && event.data.bare;
-    if (typeof bare !== 'string' || !bare || bare === self.__uv$config.bare) return;
-    self.__uv$config.bare = bare;
-    sw = new UVServiceWorker();
+const uv = new UVServiceWorker();
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', (event) => {
+    event.respondWith(uv.route(event) ? uv.fetch(event) : fetch(event.request));
 });

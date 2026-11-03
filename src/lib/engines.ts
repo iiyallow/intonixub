@@ -9,6 +9,9 @@ export const DEFAULT_ENGINES = [
   "https://cvzdmqxxvhgtgdbyfo3xmhm7yy0bolmt.lambda-url.us-east-2.on.aws",
 ];
 
+/** Fast Wisp tunnel for signed-in members (empty = off). */
+export const WISP_URL = "wss://cia-see-stylus-replication.trycloudflare.com/wisp/";
+
 const ACTIVE_KEY = "intonix:active-engine";
 
 export type Shortcut = { name: string; url: string };

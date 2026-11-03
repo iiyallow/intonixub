@@ -1,7 +1,6 @@
 /*global Ultraviolet*/
 self.__uv$config = {
     prefix: '/uv/service/',
-    bare: 'https://kzcmrro7sine2i3tqbzch2y3jq0ozjjc.lambda-url.us-east-2.on.aws/',
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
     handler: '/uv/uv.handler.js',

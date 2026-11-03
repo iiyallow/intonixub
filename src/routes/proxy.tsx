@@ -25,7 +25,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { DEFAULT_PROXY_BASE, QUICK_LAUNCH, buildProxyUrl, faviconOf, normalizeTarget, type ProxyMode } from "@/lib/proxy";
-import { initUV, setUVBare, uvUrl } from "@/lib/uv";
+import { initUV, setUVBare, setUVWisp, uvUrl } from "@/lib/uv";
+import { WISP_URL } from "@/lib/engines";
 import {
   DEFAULT_ENGINES,
   engineLabel,
@@ -115,6 +116,13 @@ function ProxyPage() {
     window.setTimeout(() => setEngineNotice(""), 3400);
   }, []);
 
+  const [turbo, setTurbo] = useState(false);
+  useEffect(() => {
+    if (!uv) return;
+    const on = !!session && !!WISP_URL;
+    void setUVWisp(on ? WISP_URL : "").then(() => setTurbo(on));
+  }, [uv, session]);
+
   const applyEngine = useCallback((url: string) => {
     setEngine(url);
     setBase(url);
@@ -143,7 +151,10 @@ function ProxyPage() {
   useEffect(() => {
     setPins(loadPins());
     setCustom(loadShortcuts());
-    void initUV().then(setUv);
+    void initUV().then(async (cfg) => {
+      await setUVBare(engineRef.current || DEFAULT_ENGINES[0]!);
+      setUv(cfg);
+    });
     void (async () => {
       const { data } = await supabase.from("app_settings").select("key, value");
       const map = new Map((data ?? []).map((s) => [s.key as string, s.value as string]));
@@ -529,7 +540,7 @@ function ProxyPage() {
             className="ml-auto flex h-6 shrink-0 items-center gap-1.5 rounded-full border border-border/70 px-2.5 text-[11px] text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground"
           >
             <span className={`size-1.5 rounded-full ${engineBusy ? "bg-muted-foreground" : "bg-[var(--neon-cyan)]"}`} />
-            Engine {engineIndex}/{engines.length}
+            {turbo ? "Wisp Turbo" : `Engine ${engineIndex}/${engines.length}`}
             <Zap className="size-3" />
           </button>
         </div>
