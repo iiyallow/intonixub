@@ -1544,7 +1544,12 @@ var EpoxyTransport = class {
       )
     );
     let headersObj = {};
-    for (let [key, value] of requestHeaders) {
+    const wsEntries = requestHeaders
+      ? typeof requestHeaders[Symbol.iterator] === "function"
+        ? requestHeaders
+        : Object.entries(requestHeaders)
+      : [];
+    for (let [key, value] of wsEntries) {
       if (headersObj[key]) {
         console.warn(
           `Duplicate header key "${key}" detected. Overwriting previous value.`
