@@ -1444,7 +1444,7 @@ async function __wbg_init(module_or_path) {
     }
   }
   if (typeof module_or_path === "undefined") {
-    module_or_path = new URL("epoxy.wasm", import.meta.url);
+    module_or_path = new URL("/wasm/epoxy.wasm", self.location.origin);
   }
   const imports = __wbg_get_imports();
   if (typeof module_or_path === "string" || typeof Request === "function" && module_or_path instanceof Request || typeof URL === "function" && module_or_path instanceof URL) {
