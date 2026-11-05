@@ -4,7 +4,7 @@ import { Loader2, RefreshCw, Save, ShieldCheck, ShieldOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type Profile, type Status, type Tier } from "@/lib/auth";
 import { type ProxyMode } from "@/lib/proxy";
-import { parseEngines } from "@/lib/engines";
+import { parseEngines, probeWisp, WISP_URL } from "@/lib/engines";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -31,6 +31,7 @@ function AdminPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [enginesText, setEnginesText] = useState("");
+  const [wispUrl, setWispUrl] = useState("");
   const [proxyMode, setProxyMode] = useState<ProxyMode>("query");
 
   const load = useCallback(async () => {
@@ -44,6 +45,7 @@ function AdminPage() {
     setAdmins((roles ?? []).map((r) => r.user_id as string));
     const map = new Map((settings ?? []).map((s) => [s.key as string, s.value as string]));
     setEnginesText(parseEngines(map.get("proxy_engines") || map.get("proxy_base_url") || "").join("\n"));
+    setWispUrl(map.get("wisp_url") || WISP_URL);
     setProxyMode(((map.get("proxy_mode") as ProxyMode) || "query") as ProxyMode);
     setBusy(false);
   }, []);
@@ -106,6 +108,28 @@ function AdminPage() {
     setMessage(error ? error.message : `Saved ${list.length} engine${list.length === 1 ? "" : "s"}`);
   }
 
+  function normalizeWisp(raw: string) {
+    let u = raw.trim();
+    if (!u) return "";
+    u = u.replace(/^https?:\/\//i, "wss://");
+    if (!/^wss?:\/\//i.test(u)) u = "wss://" + u;
+    u = u.replace(/\/+$/, "");
+    if (!/\/wisp$/i.test(u)) u += "/wisp";
+    return u + "/";
+  }
+
+  async function saveWisp() {
+    const url = normalizeWisp(wispUrl);
+    setWispUrl(url);
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert([{ key: "wisp_url", value: url }], { onConflict: "key" });
+    if (error) return setMessage(error.message);
+    setMessage("Saved Wisp address — checking…");
+    const ok = url ? await probeWisp(url) : false;
+    setMessage(url ? (ok ? "Saved — Wisp relay is online ✅" : "Saved, but the relay isn't answering yet") : "Wisp turned off");
+  }
+
   const filtered = rows.filter((r) =>
     query
       ? `${r.email ?? ""} ${r.display_name ?? ""}`.toLowerCase().includes(query.toLowerCase())
@@ -157,6 +181,29 @@ function AdminPage() {
             <Save className="size-4" /> Save
           </button>
         </div>
+      </section>
+
+      <section className="mt-4 rounded-2xl glass p-4">
+        <p className="font-display font-semibold">Wisp tunnel address</p>
+        <div className="mt-2 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <input
+            value={wispUrl}
+            onChange={(e) => setWispUrl(e.target.value)}
+            className="input w-full font-mono text-xs"
+            placeholder="https://your-tunnel.trycloudflare.com"
+            aria-label="Wisp tunnel address"
+          />
+          <button
+            type="button"
+            onClick={() => void saveWisp()}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Save className="size-4" /> Save
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Paste your new tunnel link — https:// links and missing /wisp/ are fixed automatically. Leave empty to turn Wisp off.
+        </p>
       </section>
 
       {message && <p className="mt-4 text-sm text-primary">{message}</p>}

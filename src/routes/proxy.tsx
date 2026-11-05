@@ -120,32 +120,33 @@ function ProxyPage() {
   const [turbo, setTurbo] = useState(false);
   const [health, setHealth] = useState<"checking" | "up" | "down">("checking");
   const { settings: prefs } = useIntonix();
-  const wantWisp = !!session && !!WISP_URL && prefs.transport === "wisp";
+  const [wispUrl, setWispUrl] = useState(WISP_URL);
+  const wantWisp = !!session && !!wispUrl && prefs.transport === "wisp";
   useEffect(() => {
     if (!uv) return;
     let cancelled = false;
     void (async () => {
-      const ok = wantWisp ? await probeWisp() : false;
+      const ok = wantWisp ? await probeWisp(wispUrl) : false;
       if (cancelled) return;
       if (wantWisp && !ok) flashEngine("Wisp is offline — using Ultraviolet");
-      await setUVWisp(wantWisp && ok ? WISP_URL : "");
+      await setUVWisp(wantWisp && ok ? wispUrl : "");
       setTurbo(wantWisp && ok);
     })();
     return () => { cancelled = true; };
-  }, [uv, wantWisp, flashEngine]);
+  }, [uv, wantWisp, wispUrl, flashEngine]);
 
   useEffect(() => {
     if (engineBusy) return;
     let stop = false;
     const check = async () => {
-      const ok = turbo ? await probeWisp() : await probeEngine(engine);
+      const ok = turbo ? await probeWisp(wispUrl) : await probeEngine(engine);
       if (!stop) setHealth(ok ? "up" : "down");
     };
     setHealth("checking");
     void check();
     const id = window.setInterval(check, 30000);
     return () => { stop = true; window.clearInterval(id); };
-  }, [turbo, engine, engineBusy]);
+  }, [turbo, engine, engineBusy, wispUrl]);
 
   const applyEngine = useCallback((url: string) => {
     setEngine(url);
@@ -185,6 +186,8 @@ function ProxyPage() {
       const list = parseEngines(map.get("proxy_engines") || map.get("proxy_base_url") || "");
       setEngines(list);
       enginesRef.current = list;
+      const w = map.has("wisp_url") ? (map.get("wisp_url") ?? "").trim() : null;
+      if (w !== null) setWispUrl(w);
       setMode((map.get("proxy_mode") as ProxyMode) || "query");
       const chosen = await pickEngine(list, readActiveEngine());
       engineRef.current = chosen;
@@ -560,7 +563,7 @@ function ProxyPage() {
           <button
             type="button"
             onClick={() => void switchEngine("You switched engines")}
-            title={`${turbo ? WISP_URL : engine}\n${health === "up" ? "Working" : health === "down" ? "Not responding" : "Checking…"}\nClick to try the next engine`}
+            title={`${turbo ? wispUrl : engine}\n${health === "up" ? "Working" : health === "down" ? "Not responding" : "Checking…"}\nClick to try the next engine`}
             className="ml-auto flex h-6 shrink-0 items-center gap-1.5 rounded-full border border-border/70 px-2.5 text-[11px] text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground"
           >
             <span className={`size-1.5 rounded-full ${engineBusy || health === "checking" ? "animate-pulse bg-muted-foreground" : health === "up" ? "bg-[var(--neon-cyan)]" : "bg-destructive"}`} />
