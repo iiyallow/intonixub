@@ -18,6 +18,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProxyRouteImport } from './routes/proxy'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as VmRouteImport } from './routes/vm'
 import { Route as ApiPublicBootstrapAdminRouteImport } from './routes/api/public/bootstrap-admin'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +66,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VmRoute = VmRouteImport.update({
+  id: '/vm',
+  path: '/vm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicBootstrapAdminRoute = ApiPublicBootstrapAdminRouteImport.update({
   id: '/api/public/bootstrap-admin',
   path: '/api/public/bootstrap-admin',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/proxy': typeof ProxyRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/vm': typeof VmRoute
   '/api/public/bootstrap-admin': typeof ApiPublicBootstrapAdminRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/proxy': typeof ProxyRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/vm': typeof VmRoute
   '/api/public/bootstrap-admin': typeof ApiPublicBootstrapAdminRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/proxy': typeof ProxyRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/vm': typeof VmRoute
   '/api/public/bootstrap-admin': typeof ApiPublicBootstrapAdminRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/proxy'
     | '/settings'
     | '/terms'
+    | '/vm'
     | '/api/public/bootstrap-admin'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/proxy'
     | '/settings'
     | '/terms'
+    | '/vm'
     | '/api/public/bootstrap-admin'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/proxy'
     | '/settings'
     | '/terms'
+    | '/vm'
     | '/api/public/bootstrap-admin'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   ProxyRoute: typeof ProxyRoute
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
+  VmRoute: typeof VmRoute
   ApiPublicBootstrapAdminRoute: typeof ApiPublicBootstrapAdminRoute
 }
 
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vm': {
+      id: '/vm'
+      path: '/vm'
+      fullPath: '/vm'
+      preLoaderRoute: typeof VmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/bootstrap-admin': {
       id: '/api/public/bootstrap-admin'
       path: '/api/public/bootstrap-admin'
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProxyRoute: ProxyRoute,
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
+  VmRoute: VmRoute,
   ApiPublicBootstrapAdminRoute: ApiPublicBootstrapAdminRoute,
 }
 export const routeTree = rootRouteImport

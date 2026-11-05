@@ -26,7 +26,12 @@ export function SiteHeader() {
           {[
             ...NAV,
             ...(session ? [{ to: "/account", label: "Account", icon: User } as const] : [{ to: "/auth", label: "Sign in", icon: User } as const]),
-            ...(isAdmin ? [{ to: "/admin", label: "Admin", icon: ShieldCheck } as const] : []),
+            ...(isAdmin
+              ? [
+                  { to: "/vm", label: "Workstation", icon: Globe } as const,
+                  { to: "/admin", label: "Admin", icon: ShieldCheck } as const,
+                ]
+              : []),
           ].map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
