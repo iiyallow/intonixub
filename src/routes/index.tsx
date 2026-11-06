@@ -15,6 +15,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "A minimal, fast workspace for research and reading.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: HomePage,

@@ -1,5 +1,7 @@
 # IntonixUB roadmap
 
+- [ ] Include persistent proxy cookies in JSON .intonixsave exports and imports
+
 - [x] Enable Cloud backend (accounts, roles, tiers, app settings)
 - [x] Enable email/password sign-in (auto-confirm, since accounts use usernames)
 - [x] Store admin password secret + bootstrap "Intonix" admin account

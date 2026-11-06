@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Portable saves read and merge Ultraviolet's native cookie database with revived Date fields; this keeps both proxy transports compatible without exporting the app's own authentication session.

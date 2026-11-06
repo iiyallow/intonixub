@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Database, Keyboard, Lock, Palette, VenetianMask, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   CLOAK_PRESETS,
   DEFAULT_SETTINGS,
@@ -25,6 +26,8 @@ export const Route = createFileRoute("/settings")({
         property: "og:description",
         content: "Themes, tab cloaking, panic keybinds and save data — all in one place.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: SettingsPage,
@@ -72,6 +75,7 @@ function SettingsPage() {
   const { session } = useAuth();
   const [listening, setListening] = useState(false);
   const [notice, setNotice] = useState("");
+  const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const flash = (msg: string) => {
@@ -287,8 +291,13 @@ function SettingsPage() {
           played
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Action onClick={exportData}>Export save data</Action>
-          <Action onClick={() => fileRef.current?.click()}>Import save data</Action>
+          <Action disabled={saving} onClick={async () => {
+            setSaving(true);
+            try { await exportData(); flash("Save exported."); }
+            catch { flash("Could not export cookies. Please try again."); }
+            finally { setSaving(false); }
+          }}>Export save data</Action>
+          <Action disabled={saving} onClick={() => fileRef.current?.click()}>Import save data</Action>
           <Action
             onClick={() => {
               clearData();
@@ -310,16 +319,23 @@ function SettingsPage() {
         <input
           ref={fileRef}
           type="file"
-          accept="application/json"
+          accept=".intonixsave,.json,application/json"
           className="hidden"
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            const ok = importData(await file.text());
-            flash(ok ? "Save data imported." : "That file could not be read.");
-            e.target.value = "";
+            const input = e.target;
+            setSaving(true);
+            try {
+              const ok = await importData(await file.text());
+              flash(ok ? "Save data and cookies imported. Reopen console tabs to apply." : "That save could not be imported.");
+            } catch { flash("That file could not be read."); }
+            finally { input.value = ""; setSaving(false); }
           }}
         />
+        <p className="mt-3 text-xs text-muted-foreground">
+          Save files contain website cookies and may grant access to signed-in accounts. Keep them private.
+        </p>
         <p className="mt-3 text-xs text-muted-foreground">
           Defaults: {DEFAULT_SETTINGS.theme} theme, panic key {DEFAULT_SETTINGS.panicKey}.
         </p>
@@ -370,15 +386,19 @@ function Action({
   children,
   onClick,
   danger,
+  disabled,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   danger?: boolean;
+  disabled?: boolean;
 }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
+      disabled={disabled}
+      variant="secondary"
       className={`rounded-xl px-4 py-2 text-sm font-semibold transition-transform hover:scale-[1.03] ${
         danger
           ? "border border-destructive/50 text-destructive"
@@ -386,6 +406,6 @@ function Action({
       }`}
     >
       {children}
-    </button>
+    </Button>
   );
 }

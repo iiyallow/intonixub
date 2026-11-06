@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { exportCookies, importCookies, parseCookies, SAVE_FILENAME } from "./proxy-cookies";
 
 export type ThemeId =
   | "intonix"
@@ -144,8 +145,8 @@ type Ctx = {
   recent: string[];
   markPlayed: (id: string) => void;
   clearData: () => void;
-  exportData: () => void;
-  importData: (json: string) => boolean;
+  exportData: () => Promise<void>;
+  importData: (json: string) => Promise<boolean>;
   panic: () => void;
 };
 
@@ -200,22 +201,32 @@ export function IntonixProvider({ children }: { children: ReactNode }) {
     write(KEYS.recent, []);
   }, []);
 
-  const exportData = useCallback(() => {
+  const exportData = useCallback(async () => {
+    const cookies = await exportCookies();
     const blob = new Blob(
-      [JSON.stringify({ version: 1, settings, favorites, recent }, null, 2)],
+      [JSON.stringify({ version: 2, settings, favorites, recent, cookies }, null, 2)],
       { type: "application/json" },
     );
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "intonix-save.json";
+    a.download = SAVE_FILENAME;
     a.click();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, [settings, favorites, recent]);
 
-  const importData = useCallback((json: string) => {
+  const importData = useCallback(async (json: string) => {
     try {
       const parsed = JSON.parse(json);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
+      if (parsed.version !== undefined && parsed.version !== 1 && parsed.version !== 2) return false;
+      if (!parsed.settings && !parsed.favorites && !parsed.recent && !parsed.cookies) return false;
+      if (parsed.settings && (typeof parsed.settings !== "object" || Array.isArray(parsed.settings))) return false;
+      for (const key of ["favorites", "recent"]) {
+        if (parsed[key] !== undefined && (!Array.isArray(parsed[key]) || !parsed[key].every((item: unknown) => typeof item === "string"))) return false;
+      }
+      // Validate before changing preferences; old JSON saves without cookies remain supported.
+      if (parsed.cookies !== undefined) await importCookies(parseCookies(parsed.cookies));
       if (parsed.settings) {
         const next = { ...DEFAULT_SETTINGS, ...parsed.settings };
         setSettingsState(next);
