@@ -296,9 +296,44 @@ function ProxyPage() {
       if (doc?.title) p.title = doc.title;
       const path = frame?.contentWindow?.location.pathname ?? "";
       const cfg = (window as unknown as { __uv$config?: { prefix: string; decodeUrl: (s: string) => string } }).__uv$config;
+      const win = frame?.contentWindow as (Window & { __ixHooked?: boolean }) | null | undefined;
       if (cfg && path.startsWith(cfg.prefix)) {
-        const real = cfg.decodeUrl(path.slice(cfg.prefix.length) + (frame?.contentWindow?.location.search ?? ""));
+        const real = cfg.decodeUrl(path.slice(cfg.prefix.length) + (win?.location.search ?? ""));
         if (real.startsWith("http")) p.url = real;
+        // Keep new-window / top-level links and window.open inside the console.
+        if (win && doc && !win.__ixHooked) {
+          win.__ixHooked = true;
+          const toReal = (href: string) => {
+            try {
+              const u = new URL(href, win.location.href);
+              if (u.origin === location.origin && u.pathname.startsWith(cfg.prefix)) return cfg.decodeUrl(u.pathname.slice(cfg.prefix.length) + u.search);
+              if (u.origin === location.origin) return new URL(u.pathname + u.search + u.hash, real).href;
+              return u.href;
+            } catch { return ""; }
+          };
+          doc.addEventListener("click", (e) => {
+            const a = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+            if (!a) return;
+            const tgt = (a.getAttribute("target") || "").toLowerCase();
+            if (tgt && tgt !== "_self") {
+              const dest = toReal(a.href);
+              if (!dest.startsWith("http")) return;
+              e.preventDefault();
+              e.stopPropagation();
+              if (tgt === "_blank") addTab(dest); else navigate(dest, t.id);
+            }
+          }, true);
+          win.open = ((u?: string | URL) => {
+            const dest = u ? toReal(String(u)) : "";
+            if (dest.startsWith("http")) addTab(dest);
+            return null;
+          }) as typeof win.open;
+        }
+      } else if (cfg && win && path && path !== "blank" && !path.startsWith("/uv/") && t.url) {
+        // Page leaked out of the proxy onto our own origin — re-proxify it.
+        const dest = new URL(path + win.location.search + win.location.hash, t.url).href;
+        win.location.replace(uvUrl(cfg as never, dest));
+        return;
       }
       // Ultraviolet renders its own failure page when the engine can't answer.
       const body = doc?.body?.innerText?.slice(0, 3000) ?? "";
@@ -600,6 +635,7 @@ function ProxyPage() {
                     className="size-full border-0 bg-background"
                     allow="fullscreen; autoplay; clipboard-read; clipboard-write"
                     referrerPolicy="no-referrer"
+                    sandbox={uv ? "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-pointer-lock allow-presentation" : undefined}
                   />
                 ) : (
                   <NewTabPage onGo={(u) => navigate(u, t.id)} custom={custom} onAdd={addShortcut} onRemove={removeShortcut} />
