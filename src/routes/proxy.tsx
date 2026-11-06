@@ -575,6 +575,11 @@ function ProxyPage() {
 
         {/* Tab contents — inactive tabs stay alive, just hidden */}
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-xl bg-background">
+          {active?.loading && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-0.5 overflow-hidden bg-primary/15">
+              <div className="h-full w-1/3 animate-[intonix-load_1.1s_ease-in-out_infinite] bg-primary" />
+            </div>
+          )}
           {engineNotice && (
             <span className="pointer-events-none absolute bottom-3 left-3 z-40 rounded-md border border-border bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-lg">
               {engineNotice}
