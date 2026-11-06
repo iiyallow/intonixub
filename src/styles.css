@@ -484,3 +484,8 @@
   --border: oklch(0.25 0.02 60 / 14%);
   --input: oklch(0.25 0.02 60 / 18%);
 }
+
+@keyframes intonix-load {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
